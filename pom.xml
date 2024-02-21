@@ -1,0 +1,328 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.mapsmessaging</groupId>
+    <artifactId>ConfigurationLibrary</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Configuration API</name>
+    <description>Configuration API supporting multiple implementations</description>
+    <url>http://www.mapsmessaging.io</url>
+
+    <developers>
+        <developer>
+            <id>mbuckton</id>
+            <name>Matthew Buckton</name>
+            <organization>Maps Messaging</organization>
+            <organizationUrl>http://mapsmessaging.io/</organizationUrl>
+            <roles>
+                <role>founder</role>
+            </roles>
+            <timezone>Australia/Sydney</timezone>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <distribution>repo</distribution>
+            <name>Mozilla Public License Version 2.0</name>
+            <url>https://www.mozilla.org/en-US/MPL/2.0/</url>
+        </license>
+        <license>
+            <distribution>repo</distribution>
+            <name>CommonsClause</name>
+            <url>https://commonsclause.com/</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/Maps-Messaging/Configuration_Library.git</url>
+    </scm>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <gpg.keyname>matthew.buckton@mapsmessaging.io</gpg.keyname>
+
+        <runSuite>**/*Suite.class</runSuite>
+        <!-- Below property indicates the pattern of the test suite -->
+        <sonar.c.file.suffixes>-</sonar.c.file.suffixes>
+        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco</sonar.coverage.jacoco.xmlReportPaths>
+
+        <!-- Sonar-JaCoCo properties -->
+        <sonar.cpp.file.suffixes>-</sonar.cpp.file.suffixes>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+
+        <sonar.language>java</sonar.language>
+        <sonar.objc.file.suffixes>-</sonar.objc.file.suffixes>
+
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.organization>maps-messaging</sonar.organization>
+        <sonar.projectKey>Configuration_Library</sonar.projectKey>
+
+        <sonar.sources>src/main</sonar.sources>
+        <sonar.test.exclusions>
+            **/*Test.*,**/*IT.*, **.*JMH.*
+        </sonar.test.exclusions>
+    </properties>
+
+
+
+    <profiles>
+        <profile>
+            <!-- Default profile for regular releases -->
+            <id>release</id>
+            <dependencies>
+                <dependency>
+                    <groupId>io.mapsmessaging</groupId>
+                    <artifactId>simple_logging</artifactId>
+                    <version>2.0.11</version>
+                </dependency>
+            </dependencies>
+            <distributionManagement>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.13</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>mapsmessaging.io</serverId>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+        <profile>
+            <id>snapshot</id>
+            <repositories>
+                <repository>
+                    <id>maps_snapshots</id>
+                    <name>maps_snapshot_repository</name>
+                    <url>https://repository.mapsmessaging.io:8081/repository/maps_snapshots/</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <dependencies>
+                <dependency>
+                    <groupId>io.mapsmessaging</groupId>
+                    <artifactId>simple_logging</artifactId>
+                    <version>2.0.12-SNAPSHOT</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>maps_snapshots</id>
+            <name>maps_snapshot_repository</name>
+            <url>https://repository.mapsmessaging.io:8081/repository/maps_snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <keyname>${gpg.keyname}</keyname>
+                            <passphraseServerId>${gpg.keyname}</passphraseServerId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- build the source jar as well -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Setup code coverage by jacoco for our tests -->
+            <plugin>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <!-- test code, lets not track the testing -->
+                        <exclude>**/*Test.*</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <!-- attached to Maven test phase -->
+                    <execution>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <id>report</id>
+                        <phase>test</phase>
+                    </execution>
+                </executions>
+                <groupId>org.jacoco</groupId>
+                <version>0.8.11</version>
+            </plugin>
+
+            <!-- Setup the JUnit tests runner -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine}</argLine>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*IT.java</include>
+                    </includes>
+                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.2.5</version>
+            </plugin>
+
+            <!-- JavaDoc -->
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <charset>UTF-8</charset>
+                    <encoding>UTF-8</encoding>
+                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                    <reportOutputDirectory>${project.build.directory}/site/docs</reportOutputDirectory>
+                    <show>public</show>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <id>attach-javadocs</id>
+                    </execution>
+                </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.6.3</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.11</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>lombok</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <version>1.18.30</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <!-- Add annotations for not null -->
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>24.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+        <!-- Consul client API -->
+        <dependency>
+            <groupId>com.ecwid.consul</groupId>
+            <artifactId>consul-api</artifactId>
+            <version>1.4.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.orbitz.consul</groupId>
+            <artifactId>consul-client</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.4-alpha1</version>
+        </dependency>
+
+        <!-- TEST DEPENDENCIES -->
+
+
+        <!-- Junit5 -->
+        <dependency>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <scope>test</scope>
+            <version>5.10.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.14</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
