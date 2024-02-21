@@ -18,7 +18,17 @@
 
 ---
 Test1:
-  baseKey1: "string value"
-  baseKey2: 10.2
-  subKey:
-    subKey1: "subKey1"
+
+  -
+    global:
+      baseKey1: "default Key"
+
+    data:
+      baseKey1: "string value"
+      baseKey2: 10.2
+      subKey:
+        subKey1: "subKey1"
+      list:
+        - name: "name1"
+        - name: "name2"
+        - name: "name3"

@@ -19,6 +19,7 @@ package io.mapsmessaging.configuration.consul;
 
 import io.mapsmessaging.configuration.SystemProperties;
 import io.mapsmessaging.configuration.consul.ecwid.EcwidConsulManager;
+import io.mapsmessaging.configuration.consul.orbitz.OrbitzConsulManager;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 
@@ -49,14 +50,18 @@ public class ConsulManagerFactory {
     return Holder.INSTANCE;
   }
 
-  public synchronized void start(String serverId) {
+  public void start(String serverId) {
+    start(serverId, "ecwid" );
+  }
+
+  public synchronized void start(String serverId, String driver) {
     stop(); // just to be sure
     logger.log(CONSUL_MANAGER_START, serverId);
     boolean retry = true;
     int counter = 0;
     while (retry && counter < Constants.RETRY_COUNT) {
       try {
-        manager = new EcwidConsulManager(serverId);
+        manager = constructManager(serverId, driver);
         retry = false;
       } catch (IOException io) {
         logger.log(CONSUL_MANAGER_START_ABORTED, serverId, io);
@@ -75,6 +80,15 @@ public class ConsulManagerFactory {
         }
         logger.log(CONSUL_MANAGER_START_DELAYED, serverId);
       }
+    }
+  }
+
+  private ConsulServerApi constructManager(String serverId, String driver) throws IOException {
+    if(driver.equalsIgnoreCase("ecwid")) {
+      return new EcwidConsulManager(serverId);
+    }
+    else{
+      return new OrbitzConsulManager(serverId);
     }
   }
 

@@ -18,7 +18,13 @@
 
 ---
 Test2:
-  baseKey1: "string value as well"
-  baseKey2: 1000
-  subKey:
-    subKey1: "subKey1"
+
+  - global:
+      baseKey1: "default Key"
+      validKey: "should be returned"
+
+    data:
+      baseKey1: "string value as well"
+      baseKey2: 1000
+      subKey:
+        subKey1: "subKey1"
