@@ -38,7 +38,7 @@ public abstract class PropertyManager {
     properties = new ConfigurationProperties();
   }
 
-  protected abstract void load();
+  public abstract void load();
 
   protected abstract void store(String name) throws IOException;
 

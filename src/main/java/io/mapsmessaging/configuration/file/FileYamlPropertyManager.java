@@ -33,7 +33,7 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
   private final Logger logger = LoggerFactory.getLogger(FileYamlPropertyManager.class);
 
   @Override
-  protected void load() {
+  public void load() {
     try {
       Collection<String> knownProperties = ResourceList.getResources(Pattern.compile(".*yaml"));
       for (String propertyName : knownProperties) {
