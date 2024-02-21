@@ -46,7 +46,7 @@ public abstract class YamlPropertyManager extends PropertyManager {
     ConfigurationProperties configurationProperties = new ConfigurationProperties();
     for (Entry<String, Object> item : response.entrySet()) {
       Map<String, Object> entry = (Map<String, Object>) item.getValue();
-      if (entry.get("global") != null) {
+      if (entry.get(GLOBAL) != null) {
         Map<String, Object> global = (Map<String, Object>) entry.remove("global");
         configurationProperties.setGlobal(new ConfigurationProperties(global));
       }
