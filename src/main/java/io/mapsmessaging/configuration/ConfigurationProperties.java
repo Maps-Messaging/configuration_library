@@ -32,15 +32,13 @@ import static io.mapsmessaging.logging.LogMessages.PROPERTY_MANAGER_ENTRY_LOOKUP
 
 public class ConfigurationProperties {
 
+  private final Logger logger = LoggerFactory.getLogger(ConfigurationProperties.class);
+  private final Map<String, Object> map;
   @Getter
   @Setter
   private String source;
   @Setter
   private ConfigurationProperties global;
-
-  private final Logger logger = LoggerFactory.getLogger(ConfigurationProperties.class);
-
-  private final Map<String, Object> map;
 
   public ConfigurationProperties() {
     super();
@@ -127,10 +125,9 @@ public class ConfigurationProperties {
 
   private Object get(String key, Object defaultValue) {
     Object val = get(key);
-    if(val != null){
+    if (val != null) {
       logger.log(PROPERTY_MANAGER_ENTRY_LOOKUP, key, val, "Main");
-    }
-    else if (global != null) {
+    } else if (global != null) {
       val = global.get(key);
       logger.log(PROPERTY_MANAGER_ENTRY_LOOKUP, key, val, "Global");
     }
@@ -174,7 +171,7 @@ public class ConfigurationProperties {
       }
 
       long val = parseTime(value);
-      if(val != Long.MAX_VALUE) {
+      if (val != Long.MAX_VALUE) {
         return val;
       }
 
@@ -188,7 +185,7 @@ public class ConfigurationProperties {
     throw new NumberFormatException("Unknown number format detected [" + entry + "]");
   }
 
-  private long computeMultiplier(String value){
+  private long computeMultiplier(String value) {
     long multiplier = 1L;
     String end = value.substring(value.length() - 1);
     if (end.equalsIgnoreCase("T")) {
@@ -203,15 +200,13 @@ public class ConfigurationProperties {
     return multiplier;
   }
 
-  private long parseTime(String value){
+  private long parseTime(String value) {
     long val = Long.MAX_VALUE;
-    if(value.equalsIgnoreCase("weekly")){
+    if (value.equalsIgnoreCase("weekly")) {
       val = TimeUnit.DAYS.toMillis(7);
-    }
-    else if(value.equalsIgnoreCase("daily")){
+    } else if (value.equalsIgnoreCase("daily")) {
       val = TimeUnit.DAYS.toMillis(1);
-    }
-    else if(value.equalsIgnoreCase("hourly")){
+    } else if (value.equalsIgnoreCase("hourly")) {
       val = TimeUnit.HOURS.toMillis(1);
     }
     return val;
@@ -325,33 +320,28 @@ public class ConfigurationProperties {
     return packMap(map);
   }
 
-  private Map<String, Object> packMap(Map<String, Object> map){
+  private Map<String, Object> packMap(Map<String, Object> map) {
     Map<String, Object> response = new LinkedHashMap<>();
-    for(Entry<String, Object> entry:map.entrySet()){
-      if(entry.getValue() instanceof ConfigurationProperties){
-        response.put(entry.getKey(), packMap( ((ConfigurationProperties)entry.getValue()).map));
-      }
-      else if(entry.getValue() instanceof Map){
-        response.put(entry.getKey(), packMap((Map<String,Object>) entry.getValue()));
-      }
-      else if(entry.getValue() instanceof List){
+    for (Entry<String, Object> entry : map.entrySet()) {
+      if (entry.getValue() instanceof ConfigurationProperties) {
+        response.put(entry.getKey(), packMap(((ConfigurationProperties) entry.getValue()).map));
+      } else if (entry.getValue() instanceof Map) {
+        response.put(entry.getKey(), packMap((Map<String, Object>) entry.getValue()));
+      } else if (entry.getValue() instanceof List) {
         List<Object> list = (List<Object>) entry.getValue();
         List<Object> replacement = new ArrayList<>();
-        for(Object obj:list){
-          if(obj instanceof Map){
-            replacement.add(packMap((Map<String, Object>)obj));
-          }
-          else if(obj instanceof ConfigurationProperties){
-            replacement.add(packMap(((ConfigurationProperties)obj).getMap()));
-          }
-          else{
+        for (Object obj : list) {
+          if (obj instanceof Map) {
+            replacement.add(packMap((Map<String, Object>) obj));
+          } else if (obj instanceof ConfigurationProperties) {
+            replacement.add(packMap(((ConfigurationProperties) obj).getMap()));
+          } else {
             replacement.add(obj);
           }
         }
         response.put(entry.getKey(), replacement);
-      }
-      else{
-        response.put(entry.getKey(), getProperty(entry.getKey()));
+      } else {
+        response.put(entry.getKey(), entry.getValue());
       }
     }
     return response;

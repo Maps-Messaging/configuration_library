@@ -20,6 +20,7 @@ package io.mapsmessaging.configuration;
 import io.mapsmessaging.configuration.consul.ConsulManagerFactory;
 import io.mapsmessaging.configuration.consul.ConsulPropertyManager;
 import io.mapsmessaging.configuration.file.FileYamlPropertyManager;
+import io.mapsmessaging.configuration.yaml.YamlPropertyManager;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import lombok.NonNull;
@@ -31,16 +32,9 @@ import java.util.List;
 
 import static io.mapsmessaging.logging.ConfigLogMessages.*;
 
+@SuppressWarnings("java:S6548") // yes it is a singleton
 public class ConfigurationManager {
-
-  private static final ConfigurationManager instance;
-
-  static {
-    instance = new ConfigurationManager();
-  }
-
   private final Logger logger = LoggerFactory.getLogger(ConfigurationManager.class);
-
   private final List<PropertyManager> propertyManagers;
   private PropertyManager authoritative;
 
@@ -51,7 +45,7 @@ public class ConfigurationManager {
   }
 
   public static ConfigurationManager getInstance() {
-    return instance;
+    return Holder.INSTANCE;
   }
 
   public void initialise(@NonNull @NotNull String serverId) {
@@ -70,7 +64,7 @@ public class ConfigurationManager {
       authoritative = new ConsulPropertyManager(serverId);
       authoritative.load();
       String locatedDefault = ConsulManagerFactory.getInstance().getManager().scanForDefaultConfig(consulConfigPath);
-      if(!locatedDefault.isEmpty()){
+      if (!locatedDefault.isEmpty()) {
         defaultName = locatedDefault;
       }
 
@@ -93,8 +87,7 @@ public class ConfigurationManager {
       if (authoritative != null && authoritative.properties.size() == 0) {
         authoritative.copy(defaultConsulManager); // Define the local host
       }
-    }
-    catch(Throwable th){
+    } catch (Throwable th) {
       logger.log(CONSUL_CLIENT_EXCEPTION, th);
     }
   }
@@ -106,12 +99,16 @@ public class ConfigurationManager {
     }
 
     for (PropertyManager manager : propertyManagers) {
-      if ( manager.contains(name)) {
+      if (manager.contains(name)) {
         logger.log(PROPERTY_MANAGER_LOOKUP, name, "Backup");
         return manager.getProperties(name);
       }
     }
     logger.log(PROPERTY_MANAGER_LOOKUP_FAILED, name);
     return new ConfigurationProperties(new HashMap<>());
+  }
+
+  private static class Holder {
+    static final ConfigurationManager INSTANCE = new ConfigurationManager();
   }
 }

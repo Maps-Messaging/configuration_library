@@ -83,6 +83,14 @@
                     <artifactId>simple_logging</artifactId>
                     <version>2.0.11</version>
                 </dependency>
+
+                <!-- Non Blocking Task Queue module -->
+                <dependency>
+                    <groupId>io.mapsmessaging</groupId>
+                    <artifactId>non_block_task_scheduler</artifactId>
+                    <version>2.1.8</version>
+                </dependency>
+
             </dependencies>
             <distributionManagement>
                 <repository>
@@ -129,6 +137,13 @@
                     <artifactId>simple_logging</artifactId>
                     <version>2.0.12-SNAPSHOT</version>
                 </dependency>
+                <!-- Non Blocking Task Queue module -->
+                <dependency>
+                    <groupId>io.mapsmessaging</groupId>
+                    <artifactId>non_block_task_scheduler</artifactId>
+                    <version>2.1.9-SNAPSHOT</version>
+                </dependency>
+
             </dependencies>
         </profile>
     </profiles>
@@ -297,12 +312,13 @@
             <version>1.5.3</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
         <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5</artifactId>
-            <version>5.4-alpha1</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
         </dependency>
+
 
         <!-- TEST DEPENDENCIES -->
 

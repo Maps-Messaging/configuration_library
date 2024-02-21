@@ -18,6 +18,7 @@ package io.mapsmessaging.configuration.consul;
 
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import io.mapsmessaging.utilities.threads.SimpleTaskScheduler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,12 +32,10 @@ import static io.mapsmessaging.logging.ConfigLogMessages.*;
 
 public abstract class ConsulServerApi implements Runnable {
   private static final Pattern VALID_KEY_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9-._~/]+$");
-  private final Logger logger = LoggerFactory.getLogger(ConsulServerApi.class);
-
   protected final List<String> serviceIds;
   protected final String uniqueName;
   protected final ConsulConfiguration consulConfiguration;
-
+  private final Logger logger = LoggerFactory.getLogger(ConsulServerApi.class);
   protected Future<?> scheduledTask;
 
   protected ConsulServerApi(String name) {
@@ -91,10 +90,6 @@ public abstract class ConsulServerApi implements Runnable {
   protected abstract void pingService();
 
   public abstract void register(Map<String, String> meta);
-
-  public abstract void register(EndPointServer endPointServer);
-
-  public abstract void register(RestApiServerManager restApiServerManager);
 
   public String getUrlPath() {
     return consulConfiguration.getUrlPath();

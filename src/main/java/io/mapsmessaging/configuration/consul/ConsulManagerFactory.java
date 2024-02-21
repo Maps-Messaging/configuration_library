@@ -28,21 +28,26 @@ import java.util.concurrent.locks.LockSupport;
 
 import static io.mapsmessaging.logging.ConfigLogMessages.*;
 
+@SuppressWarnings("java:S6548") // yes it is a singleton
 public class ConsulManagerFactory {
-
-  private static final ConsulManagerFactory instance;
-
-  static {
-    instance = new ConsulManagerFactory();
-  }
-
-  public static ConsulManagerFactory getInstance() {
-    return instance;
-  }
 
   private final Logger logger = LoggerFactory.getLogger(ConsulManagerFactory.class);
   private final boolean forceWait;
   private ConsulServerApi manager;
+  private ConsulManagerFactory() {
+    boolean config;
+    try {
+      config = SystemProperties.getInstance().getBooleanProperty("ForceConsul", false);
+    } catch (Exception e) {
+      config = false;
+    }
+    forceWait = config;
+    manager = null;
+  }
+
+  public static ConsulManagerFactory getInstance() {
+    return Holder.INSTANCE;
+  }
 
   public synchronized void start(String serverId) {
     stop(); // just to be sure
@@ -53,8 +58,7 @@ public class ConsulManagerFactory {
       try {
         manager = new EcwidConsulManager(serverId);
         retry = false;
-      }
-      catch(IOException io){
+      } catch (IOException io) {
         logger.log(CONSUL_MANAGER_START_ABORTED, serverId, io);
         retry = false;
       } catch (Exception e) {
@@ -74,24 +78,13 @@ public class ConsulManagerFactory {
     }
   }
 
-  public String getPath(){
-    if(manager != null){
+  public String getPath() {
+    if (manager != null) {
       return manager.getUrlPath();
     }
     return null;
   }
 
-  public void register(RestApiServerManager restApiServerManager){
-    if(manager != null){
-      manager.register(restApiServerManager);
-    }
-  }
-
-  public void register(EndPointServer endPointServer){
-    if(manager != null && endPointServer.getConfig().getProperties().getBooleanProperty("discoverable", false)){
-      manager.register(endPointServer);
-    }
-  }
 
   public synchronized void stop() {
     if (manager != null) {
@@ -108,14 +101,7 @@ public class ConsulManagerFactory {
     return manager != null;
   }
 
-  private ConsulManagerFactory() {
-    boolean config;
-    try {
-      config = SystemProperties.getInstance().getBooleanProperty("ForceConsul", false);
-    } catch (Exception e) {
-      config = false;
-    }
-    forceWait = config;
-    manager = null;
+  private static class Holder {
+    static final ConsulManagerFactory INSTANCE = new ConsulManagerFactory();
   }
 }

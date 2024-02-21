@@ -18,13 +18,12 @@
 package io.mapsmessaging.configuration.file;
 
 import io.mapsmessaging.configuration.ResourceList;
-import io.mapsmessaging.configuration.YamlPropertyManager;
+import io.mapsmessaging.configuration.yaml.YamlPropertyManager;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 
 import java.io.*;
 import java.util.Collection;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import static io.mapsmessaging.logging.ConfigLogMessages.*;
@@ -63,7 +62,6 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
     }
     propResourceName = propResourceName + ".yaml";
     InputStream is = getClass().getResourceAsStream(propResourceName);
-    Map<String, Object> response;
     if (is != null) {
       int read = 1;
       byte[] buffer = new byte[1024];

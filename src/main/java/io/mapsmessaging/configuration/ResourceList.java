@@ -31,7 +31,7 @@ import java.util.zip.ZipFile;
 
 /**
  * This is a helper class to load resources from the classpath
- *
+ * <p>
  * * @since 1.0 * @author Matthew Buckton * @version 1.0
  */
 public class ResourceList {

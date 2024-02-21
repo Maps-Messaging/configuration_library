@@ -27,48 +27,48 @@ import lombok.Getter;
 @Getter
 public enum ConfigLogMessages implements LogMessage {
   //<editor-fold desc="System and Environment property access">
-  CONFIG_PROPERTY_ACCESS(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Getting property {} from system resulted in {}"),
-  PROPERTY_MANAGER_START(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Starting Property Manager"),
-  PROPERTY_MANAGER_FOUND(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Found and loaded property {}"),
-  PROPERTY_MANAGER_LOOKUP(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Looking failed for {} config"),
-  PROPERTY_MANAGER_LOOKUP_FAILED(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Looking for {} config, found in {}"),
-  PROPERTY_MANAGER_SCANNING(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Scanning property with {} entries"),
-  PROPERTY_MANAGER_INDEX_DETECTED(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Detected an indexed property file, parsing into different properties"),
-  PROPERTY_MANAGER_COMPLETED_INDEX(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Completed indexed property with {} for index {}"),
-  PROPERTY_MANAGER_SCAN_FAILED(LEVEL.WARN, CATEGORY.CONFIGURATION, "Failed to scan for property files"),
-  PROPERTY_MANAGER_LOAD_FAILED(LEVEL.WARN, CATEGORY.CONFIGURATION, "Failed to load property {}"),
-  PROPERTY_MANAGER_ENTRY_LOOKUP(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Lookup for {} found {} in {}"),
-  PROPERTY_MANAGER_ENTRY_LOOKUP_FAILED(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Lookup for {} not found, returning default {}"),
+  CONFIG_PROPERTY_ACCESS(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Getting property {} from system resulted in {}"),
+  PROPERTY_MANAGER_START(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Starting Property Manager"),
+  PROPERTY_MANAGER_FOUND(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Found and loaded property {}"),
+  PROPERTY_MANAGER_LOOKUP(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Looking failed for {} config"),
+  PROPERTY_MANAGER_LOOKUP_FAILED(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Looking for {} config, found in {}"),
+  PROPERTY_MANAGER_SCANNING(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Scanning property with {} entries"),
+  PROPERTY_MANAGER_INDEX_DETECTED(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Detected an indexed property file, parsing into different properties"),
+  PROPERTY_MANAGER_COMPLETED_INDEX(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Completed indexed property with {} for index {}"),
+  PROPERTY_MANAGER_SCAN_FAILED(LEVEL.WARN, CONFIG_CATEGORY.CONFIGURATION, "Failed to scan for property files"),
+  PROPERTY_MANAGER_LOAD_FAILED(LEVEL.WARN, CONFIG_CATEGORY.CONFIGURATION, "Failed to load property {}"),
+  PROPERTY_MANAGER_ENTRY_LOOKUP(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Lookup for {} found {} in {}"),
+  PROPERTY_MANAGER_ENTRY_LOOKUP_FAILED(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Lookup for {} not found, returning default {}"),
   //</editor-fold>
 
   //<editor-fold desc="CONSUL agent logging">
-  CONSUL_STARTUP(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Agent startup"),
-  CONSUL_CLIENT_LOG(LEVEL.WARN, CATEGORY.CONFIGURATION, "Consul Client state {} with config {}"),
-  CONSUL_CLIENT_EXCEPTION(LEVEL.WARN, CATEGORY.CONFIGURATION, "Consul Client raised exception {}"),
+  CONSUL_STARTUP(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Agent startup"),
+  CONSUL_CLIENT_LOG(LEVEL.WARN, CONFIG_CATEGORY.CONFIGURATION, "Consul Client state {} with config {}"),
+  CONSUL_CLIENT_EXCEPTION(LEVEL.WARN, CONFIG_CATEGORY.CONFIGURATION, "Consul Client raised exception {}"),
 
-  CONSUL_SHUTDOWN(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Agent shutdown"),
-  CONSUL_REGISTER(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Registering with local agent"),
-  CONSUL_PING_EXCEPTION(LEVEL.DEBUG, CATEGORY.CONFIGURATION, "Ping failed with exception {}"),
+  CONSUL_SHUTDOWN(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Agent shutdown"),
+  CONSUL_REGISTER(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Registering with local agent"),
+  CONSUL_PING_EXCEPTION(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Ping failed with exception {}"),
   //</editor-fold>
 
   //<editor-fold desc="CONSUL management log messages">
-  CONSUL_MANAGER_START(LEVEL.INFO, CATEGORY.CONFIGURATION, "Manager starting up for id {}"),
-  CONSUL_MANAGER_STOP(LEVEL.INFO, CATEGORY.CONFIGURATION, "Manager shutting down"),
-  CONSUL_KEY_VALUE_MANAGER(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Consul Key/Value, Action:{}, Key: \"{}\""),
-  CONSUL_INVALID_KEY(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Consul Key/Value, invalid key received {}, changed to {}"),
-  CONSUL_MANAGER_START_ABORTED(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Startup aborted due to configuration, id {}"),
-  CONSUL_MANAGER_START_DELAYED(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Startup delaying server startup due to configuration for id {}"),
-  CONSUL_MANAGER_START_SERVER_NOT_FOUND(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Startup aborted since Consul Server is not responding, id {}"),
+  CONSUL_MANAGER_START(LEVEL.INFO, CONFIG_CATEGORY.CONFIGURATION, "Manager starting up for id {}"),
+  CONSUL_MANAGER_STOP(LEVEL.INFO, CONFIG_CATEGORY.CONFIGURATION, "Manager shutting down"),
+  CONSUL_KEY_VALUE_MANAGER(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Consul Key/Value, Action:{}, Key: \"{}\""),
+  CONSUL_INVALID_KEY(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Consul Key/Value, invalid key received {}, changed to {}"),
+  CONSUL_MANAGER_START_ABORTED(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Startup aborted due to configuration, id {}"),
+  CONSUL_MANAGER_START_DELAYED(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Startup delaying server startup due to configuration for id {}"),
+  CONSUL_MANAGER_START_SERVER_NOT_FOUND(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Startup aborted since Consul Server is not responding, id {}"),
   //</editor-fold>
 
   //<editor-fold desc="CONSUL Key/Value management log messages">
-  CONSUL_PROPERTY_MANAGER_NO_KEY_VALUES(LEVEL.ERROR, CATEGORY.CONFIGURATION, "No keys found in Consul Key/Value for id {}"),
-  CONSUL_PROPERTY_MANAGER_KEY_LOOKUP_EXCEPTION(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Key {}, lookup failed with exception"),
-  CONSUL_PROPERTY_MANAGER_KEY_LOOKUP_SUCCESS(LEVEL.INFO, CATEGORY.CONFIGURATION, "Key {}, lookup success, returned {} bytes"),
+  CONSUL_PROPERTY_MANAGER_NO_KEY_VALUES(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "No keys found in Consul Key/Value for id {}"),
+  CONSUL_PROPERTY_MANAGER_KEY_LOOKUP_EXCEPTION(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Key {}, lookup failed with exception"),
+  CONSUL_PROPERTY_MANAGER_KEY_LOOKUP_SUCCESS(LEVEL.INFO, CONFIG_CATEGORY.CONFIGURATION, "Key {}, lookup success, returned {} bytes"),
 
-  CONSUL_PROPERTY_MANAGER_INVALID_JSON(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Value returned is not valid json for key {}"),
-  CONSUL_PROPERTY_MANAGER_SAVE_ALL(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Saving all entries for {}"),
-  CONSUL_PROPERTY_MANAGER_STORE(LEVEL.ERROR, CATEGORY.CONFIGURATION, "Storing entry for {}"),
+  CONSUL_PROPERTY_MANAGER_INVALID_JSON(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Value returned is not valid json for key {}"),
+  CONSUL_PROPERTY_MANAGER_SAVE_ALL(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Saving all entries for {}"),
+  CONSUL_PROPERTY_MANAGER_STORE(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Storing entry for {}"),
   //</editor-fold>
   ;
 
@@ -91,7 +91,7 @@ public enum ConfigLogMessages implements LogMessage {
   }
 
   @Getter
-  public enum CATEGORY implements Category {
+  public enum CONFIG_CATEGORY implements Category {
     CONFIGURATION("Config");
 
     public final String description;
@@ -100,7 +100,7 @@ public enum ConfigLogMessages implements LogMessage {
       return "Test";
     }
 
-    CATEGORY(String description) {
+    CONFIG_CATEGORY(String description) {
       this.description = description;
     }
   }

@@ -15,11 +15,14 @@
  *
  */
 
-package io.mapsmessaging.configuration;
+package io.mapsmessaging.configuration.yaml;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.configuration.PropertyManager;
+import io.mapsmessaging.configuration.parsers.JsonParser;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -67,9 +70,23 @@ public abstract class YamlPropertyManager extends PropertyManager {
 
   @Override
   public void copy(PropertyManager propertyManager) throws IOException {
-    HashMap<String, Object> data = new LinkedHashMap<>(propertyManager.properties.getMap());
+    HashMap<String, Object> data = new LinkedHashMap<>(propertyManager.getProperties().getMap());
     properties.clear();
     properties.putAll(data);
     properties.setGlobal(properties.getGlobal());
+  }
+
+  @Override
+  public String toString() {
+    HashMap<String, Object> data = new LinkedHashMap<>(properties.getMap());
+    if (properties.getGlobal() != null) {
+      data.put(GLOBAL, new LinkedHashMap<>(properties.getGlobal().getMap()));
+    }
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024);
+    try (PrintWriter writer = new PrintWriter(outputStream)) {
+      Yaml yaml = new Yaml();
+      yaml.dump(data, writer);
+    }
+    return outputStream.toString();
   }
 }

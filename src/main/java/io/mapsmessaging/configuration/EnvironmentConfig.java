@@ -30,14 +30,7 @@ import java.util.Map;
 @Getter
 @SuppressWarnings("java:S6548") // yes it is a singleton
 public class EnvironmentConfig {
-  private static class Holder {
-    static final EnvironmentConfig INSTANCE = new EnvironmentConfig();
-  }
-  public static EnvironmentConfig getInstance() {
-    return EnvironmentConfig.Holder.INSTANCE;
-  }
   private final Logger logger = LoggerFactory.getLogger(EnvironmentConfig.class);
-
   private final Map<String, String> pathLookups;
   private final Map<String, File> pathLocations;
 
@@ -46,14 +39,18 @@ public class EnvironmentConfig {
     pathLookups = new LinkedHashMap<>();
   }
 
-  public void clearAll(){
+  public static EnvironmentConfig getInstance() {
+    return Holder.INSTANCE;
+  }
+
+  public void clearAll() {
     pathLocations.clear();
     pathLookups.clear();
   }
 
   public boolean registerPath(EnvironmentPathLookup pathConfig) throws IOException {
     String path = loadAndCreatePath(pathConfig.getName(), pathConfig.getDefaultPath(), pathConfig.isCreate());
-    if(path != null) {
+    if (path != null) {
       pathLookups.put(pathConfig.getName(), path);
       pathLocations.put(pathConfig.getName(), new File(path));
       return true;
@@ -68,8 +65,7 @@ public class EnvironmentConfig {
     if (!testPath.exists()) {
       if (create) {
         Files.createDirectories(testPath.toPath());
-      }
-      else{
+      } else {
         return null;
       }
     }
@@ -79,11 +75,10 @@ public class EnvironmentConfig {
     return directoryPath;
   }
 
-
   public String translatePath(String path) {
     String updated = path;
-    for(Map.Entry<String, String> entry:pathLookups.entrySet()){
-      updated = updated.replace("{{"+entry.getKey()+"}}", entry.getValue());
+    for (Map.Entry<String, String> entry : pathLookups.entrySet()) {
+      updated = updated.replace("{{" + entry.getKey() + "}}", entry.getValue());
     }
 
     while (updated.contains("{{") && updated.contains("}}")) {
@@ -105,7 +100,7 @@ public class EnvironmentConfig {
   }
 
   public String scanForNonStandardSub(String path) {
-    if(path.contains("{{") && path.contains("}}")) {
+    if (path.contains("{{") && path.contains("}}")) {
       int start = path.indexOf("{{");
       int end = path.indexOf("}}");
       String env = path.substring(start + 2, end);
@@ -116,6 +111,10 @@ public class EnvironmentConfig {
       }
     }
     return path;
+  }
+
+  private static class Holder {
+    static final EnvironmentConfig INSTANCE = new EnvironmentConfig();
   }
 
 }

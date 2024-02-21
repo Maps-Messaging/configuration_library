@@ -15,7 +15,7 @@
  *
  */
 
-package io.mapsmessaging.configuration;
+package io.mapsmessaging.configuration.parsers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;

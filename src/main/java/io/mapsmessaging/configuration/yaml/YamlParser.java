@@ -15,8 +15,9 @@
  *
  */
 
-package io.mapsmessaging.configuration;
+package io.mapsmessaging.configuration.yaml;
 
+import io.mapsmessaging.configuration.parsers.JsonParser;
 import org.json.JSONObject;
 
 import java.util.Map;

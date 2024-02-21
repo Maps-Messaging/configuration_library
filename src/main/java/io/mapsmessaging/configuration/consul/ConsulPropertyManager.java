@@ -20,7 +20,7 @@ package io.mapsmessaging.configuration.consul;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.configuration.PropertyManager;
-import io.mapsmessaging.configuration.YamlPropertyManager;
+import io.mapsmessaging.configuration.yaml.YamlPropertyManager;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class ConsulPropertyManager extends YamlPropertyManager {
   private final Logger logger = LoggerFactory.getLogger(ConsulPropertyManager.class);
 
   public ConsulPropertyManager(String prefix) {
-    if(prefix.startsWith("/")){
+    if (prefix.startsWith("/")) {
       prefix = prefix.substring(1);
     }
     serverPrefix = prefix + "/";

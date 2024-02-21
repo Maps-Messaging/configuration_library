@@ -36,7 +36,6 @@ public class OrbitzConsulManager extends ConsulServerApi implements ClientEventC
 
   private final Logger logger = LoggerFactory.getLogger(OrbitzConsulManager.class);
 
-  private final Consul client;
   private final AgentClient agentClient;
   private final KeyValueClient keyValueClient;
 
@@ -45,7 +44,7 @@ public class OrbitzConsulManager extends ConsulServerApi implements ClientEventC
     super(serverId);
     try {
       logger.log(CONSUL_CLIENT_LOG, "Creating client", consulConfiguration);
-      client = createBuilder().build();
+      Consul client = createBuilder().build();
       logger.log(CONSUL_CLIENT_LOG, "Created client", consulConfiguration);
       agentClient = consulConfiguration.registerAgent() ? client.agentClient() : null;
       keyValueClient = client.keyValueClient();
@@ -74,32 +73,23 @@ public class OrbitzConsulManager extends ConsulServerApi implements ClientEventC
     //
     // Process a potential ACL, they are different to a token
     //
-    if (consulConfiguration.getConsulAcl() != null) builder.withAclToken(consulConfiguration.getConsulAcl());
-    if (consulConfiguration.registerAgent()) {
-      return builder.withUrl(consulConfiguration.getConsulUrl())
-          .withWriteTimeoutMillis(60000)
-          .withReadTimeoutMillis(60000)
-          .withHttps(consulConfiguration.getConsulUrl().toLowerCase().startsWith("https"))
-          .withClientEventCallback(this)
-          .withPing(true);
-    } else {
-      return builder.withUrl(consulConfiguration.getConsulUrl())
-          .withWriteTimeoutMillis(60000)
-          .withReadTimeoutMillis(60000)
-          .withHttps(consulConfiguration.getConsulUrl().toLowerCase().startsWith("https"))
-          .withClientEventCallback(this)
-          .withPing(false);
+    if (consulConfiguration.getConsulAcl() != null) {
+      builder.withAclToken(consulConfiguration.getConsulAcl());
     }
+    return builder.withUrl(consulConfiguration.getConsulUrl())
+        .withWriteTimeoutMillis(60000)
+        .withReadTimeoutMillis(60000)
+        .withHttps(consulConfiguration.getConsulUrl().toLowerCase().startsWith("https"))
+        .withClientEventCallback(this)
+        .withPing(consulConfiguration.registerAgent());
   }
 
   @Override
   public void register(Map<String, String> meta) {
-    if(!consulConfiguration.registerAgent()){
+    if (!consulConfiguration.registerAgent()) {
       return;
     }
     List<String> propertyNames = new ArrayList<>();
-    meta.put("version", BuildInfo.getBuildVersion());
-    meta.put("build-Date", BuildInfo.getBuildDate());
     logger.log(CONSUL_REGISTER);
 
     Registration service = ImmutableRegistration.builder()
@@ -115,56 +105,10 @@ public class OrbitzConsulManager extends ConsulServerApi implements ClientEventC
     registerPingTask();
   }
 
-  @Override
-  public void register(EndPointServer endPointServer){
-    if(!consulConfiguration.registerAgent()){
-      return;
-    }
-    EndPointURL endPointURL = new EndPointURL(endPointServer.getConfig().getUrl());
-    String host = endPointURL.getHost();
-    if(host.equals("0.0.0.0")){
-      return; // Not Yet Supported
-    }
-    int port = endPointURL.getPort();
-    String protocol = endPointServer.getConfig().getProtocols();
-    String id = uniqueName+"-"+endPointServer.getConfig().getProperties().getProperty("name");
-    Registration service = ImmutableRegistration.builder()
-        .id(id)
-        .name(Constants.NAME+"-"+protocol)
-        .port(port)
-        .check(Registration.RegCheck.tcp(host+":"+port, Constants.PING_TIME, Constants.PING_TIME/2))
-        .build();
-    agentClient.register(service);
-    serviceIds.add(id);
-  }
-
-  @Override
-  public void register(RestApiServerManager restApiServerManager){
-    if(!consulConfiguration.registerAgent()){
-      return;
-    }
-    String host = restApiServerManager.getHost();
-    if(host.equals("0.0.0.0")){
-      return; // Not Yet Supported
-    }
-    int port = restApiServerManager.getPort();
-    String protocol = "http";
-    if(restApiServerManager.isSecure()) protocol = "https";
-    String url = protocol+"://"+host+":"+port+"/api/v1/ping";
-    Registration service = ImmutableRegistration.builder()
-        .id(uniqueName+"-RestApi")
-        .name(Constants.NAME+"-RestApi")
-        .port(restApiServerManager.getPort())
-        .check(Registration.RegCheck.http(url, Constants.PING_TIME))
-        .build();
-    agentClient.register(service);
-    serviceIds.add(uniqueName+"-RestApi");
-  }
-
   public void stop() {
     super.stop();
     if (consulConfiguration.registerAgent()) {
-      for(String id:serviceIds){
+      for (String id : serviceIds) {
         agentClient.deregister(id);
       }
     }
@@ -184,8 +128,7 @@ public class OrbitzConsulManager extends ConsulServerApi implements ClientEventC
     String keyName = validateKey(key);
     try {
       logger.log(CONSUL_KEY_VALUE_MANAGER, "getKeys", keyName);
-      List<String> keyList = keyValueClient.getKeys(keyName);
-      return keyList;
+      return keyValueClient.getKeys(keyName);
     } catch (ConsulException ex) {
       throw new IOException(ex);
     }

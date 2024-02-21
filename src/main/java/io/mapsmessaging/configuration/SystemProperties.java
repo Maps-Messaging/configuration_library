@@ -26,17 +26,13 @@ import static io.mapsmessaging.logging.LogMessages.CONFIG_PROPERTY_ACCESS;
 @SuppressWarnings("java:S6548") // yes it is a singleton
 public class SystemProperties {
 
-  private static class Holder {
-    static final SystemProperties INSTANCE = new SystemProperties();
-  }
-  public static SystemProperties getInstance() {
-    return SystemProperties.Holder.INSTANCE;
-  }
-
-
   private final Logger logger = LoggerFactory.getLogger(SystemProperties.class);
 
   private SystemProperties() {
+  }
+
+  public static SystemProperties getInstance() {
+    return Holder.INSTANCE;
   }
 
   public String locateProperty(String key, String defaultValue) {
@@ -107,6 +103,10 @@ public class SystemProperties {
       return value;
     }
     return null;
+  }
+
+  private static class Holder {
+    static final SystemProperties INSTANCE = new SystemProperties();
   }
 
 }

@@ -23,14 +23,14 @@ import com.ecwid.consul.v1.ConsulRawClient;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.kv.model.GetValue;
-
+import io.mapsmessaging.configuration.consul.Constants;
 import io.mapsmessaging.configuration.consul.ConsulServerApi;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.entity.mime.Header;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.http.Header;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -43,8 +43,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import static io.mapsmessaging.logging.ConfigLogMessages.CONSUL_CLIENT_LOG;
-import static io.mapsmessaging.logging.ConfigLogMessages.CONSUL_STARTUP;
+import static io.mapsmessaging.logging.ConfigLogMessages.*;
 
 public class EcwidConsulManager extends ConsulServerApi {
 
@@ -98,7 +97,9 @@ public class EcwidConsulManager extends ConsulServerApi {
         .setDefaultHeaders(defaultHeaders)
         .build();
 
-    ConsulRawClient rawClient = new ConsulRawClient(url.getProtocol() + "://" + url.getHost(), port, httpClient);
+    String host = url.getProtocol() + "://" + url.getHost();
+
+    ConsulRawClient rawClient = new ConsulRawClient(host, port, httpClient);
 
     return new ConsulClient(rawClient);
   }
@@ -106,7 +107,7 @@ public class EcwidConsulManager extends ConsulServerApi {
 
   @Override
   protected void pingService() {
-
+    // To Do
   }
 
   @Override
@@ -118,9 +119,7 @@ public class EcwidConsulManager extends ConsulServerApi {
     serviceCheck.setInterval("10s");
 
     List<String> propertyNames = new ArrayList<>();
-    meta.put("version", BuildInfo.getBuildVersion());
-    meta.put("build-Date", BuildInfo.getBuildDate());
-    logger.log(ServerLogMessages.CONSUL_REGISTER);
+    logger.log(CONSUL_REGISTER);
     NewService newService = new NewService();
     newService.setId(uniqueName);
     newService.setName(Constants.NAME);
@@ -129,16 +128,6 @@ public class EcwidConsulManager extends ConsulServerApi {
     newService.setCheck(serviceCheck);
     client.agentServiceRegister(newService);
     registerPingTask();
-  }
-
-  @Override
-  public void register(EndPointServer endPointServer) {
-
-  }
-
-  @Override
-  public void register(RestApiServerManager restApiServerManager) {
-
   }
 
   private void recreateClient() throws IOException {
@@ -217,7 +206,6 @@ public class EcwidConsulManager extends ConsulServerApi {
     }
   }
 
-
   private List<String> getKeysInternal(String key) {
     String keyName = validateKey(key);
     logger.log(CONSUL_KEY_VALUE_MANAGER, "getKeys", keyName);
@@ -244,9 +232,7 @@ public class EcwidConsulManager extends ConsulServerApi {
 
   private void putValueInternal(String key, String value) {
     String keyName = validateKey(key);
-    if (cache.containsKey(key)) {
-      cache.remove(key);
-    }
+    cache.remove(key);
     value = value.replace("\n", "\r\n");
     value = value.replace("\r\r", "\r");
     logger.log(CONSUL_KEY_VALUE_MANAGER, "putValue", keyName);
@@ -255,9 +241,7 @@ public class EcwidConsulManager extends ConsulServerApi {
 
   private void deleteKeyInternal(String key) {
     String keyName = validateKey(key);
-    if (cache.containsKey(key)) {
-      cache.remove(key);
-    }
+    cache.remove(key);
     logger.log(CONSUL_KEY_VALUE_MANAGER, "deleteKey", keyName);
     client.deleteKVValue(keyName);
   }
