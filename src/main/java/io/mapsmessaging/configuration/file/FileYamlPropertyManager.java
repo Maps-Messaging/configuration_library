@@ -23,7 +23,9 @@ import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static io.mapsmessaging.logging.ConfigLogMessages.*;
@@ -42,6 +44,11 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
     } catch (IOException e) {
       logger.log(PROPERTY_MANAGER_SCAN_FAILED, e);
     }
+  }
+
+  @Override
+  protected List<String> getKeys(String lookup) {
+    return new ArrayList<>();
   }
 
   private void loadProperty(String propertyName) {

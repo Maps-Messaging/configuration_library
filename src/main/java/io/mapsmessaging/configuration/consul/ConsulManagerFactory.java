@@ -39,7 +39,6 @@ public class ConsulManagerFactory {
     return Holder.INSTANCE;
   }
 
-
   private final Logger logger = LoggerFactory.getLogger(ConsulManagerFactory.class);
   private final boolean forceWait;
   private ConsulServerApi manager;

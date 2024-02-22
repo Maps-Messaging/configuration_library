@@ -25,6 +25,7 @@ import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -44,13 +45,8 @@ public class ConsulPropertyManager extends YamlPropertyManager {
 
   @Override
   public void load() {
-    try {
-      List<String> keys = ConsulManagerFactory.getInstance().getManager().getKeys(serverPrefix);
-      for (String key : keys) {
-        processKey(key);
-      }
-    } catch (IOException e) {
-      logger.log(CONSUL_PROPERTY_MANAGER_NO_KEY_VALUES, serverPrefix);
+    for (String key : getKeys(serverPrefix)) {
+      processKey(key);
     }
   }
 
@@ -101,6 +97,17 @@ public class ConsulPropertyManager extends YamlPropertyManager {
     properties.setSource(propertyManager.getProperties().getSource());
     save();
   }
+
+  @Override
+  protected List<String> getKeys(String lookup) {
+    try {
+      return ConsulManagerFactory.getInstance().getManager().getKeys(lookup);
+    } catch (IOException e) {
+      logger.log(CONSUL_PROPERTY_MANAGER_NO_KEY_VALUES, serverPrefix);
+    }
+    return new ArrayList<>();
+  }
+
 
   public void save() throws IOException {
     logger.log(CONSUL_PROPERTY_MANAGER_SAVE_ALL, serverPrefix);
