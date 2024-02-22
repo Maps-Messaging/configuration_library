@@ -7,9 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
+import java.util.List;;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -128,7 +126,7 @@ public abstract class PropertyManagerTest {
 
     @Override
     protected List<String> getKeys(String lookup) {
-      return new ArrayList<>(properties.keySet()).stream().filter(s -> s.startsWith(lookup) || s.equals(lookup)).collect(Collectors.toList());
+      return new ArrayList<>(properties.keySet()).stream().filter(s -> s.startsWith(lookup)).collect(Collectors.toList());
     }
   }
 }
