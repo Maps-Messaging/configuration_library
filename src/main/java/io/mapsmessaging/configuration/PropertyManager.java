@@ -29,11 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static io.mapsmessaging.logging.ConfigLogMessages.CONSUL_CLIENT_EXCEPTION;
-
+@Getter
 public abstract class PropertyManager {
 
-  @Getter
   protected final ConfigurationProperties properties;
 
   protected PropertyManager() {
