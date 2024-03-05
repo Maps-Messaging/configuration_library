@@ -2,13 +2,30 @@ package io.mapsmessaging.configuration.aws;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Properties;
 
 class AwsPropertyManagerTest {
 
+
+  @BeforeAll
+  public static void loadConfig() throws IOException {
+    Properties prop = new Properties();
+    try (InputStream input = AwsPropertyManagerTest.class.getClassLoader().getResourceAsStream("s3.properties")) {
+      if (input != null) {
+        prop.load(input);
+        for(Map.Entry<Object, Object> entry:prop.entrySet()){
+          System.setProperty(entry.getKey().toString(), entry.getValue().toString());
+        }
+      }
+    }
+  }
 
   @DisplayName("test valid load")
   @Test
