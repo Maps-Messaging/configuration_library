@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -23,7 +25,17 @@ class AwsPropertyManagerTest {
         for(Map.Entry<Object, Object> entry:prop.entrySet()){
           System.setProperty(entry.getKey().toString(), entry.getValue().toString());
         }
+        return;
       }
+    }
+    try (InputStream input = new FileInputStream("s3.properties")) {
+      prop.load(input);
+      for(Map.Entry<Object, Object> entry:prop.entrySet()){
+        System.setProperty(entry.getKey().toString(), entry.getValue().toString());
+      }
+    }
+    catch(FileNotFoundException ex){
+      // ignore this since we can fall through
     }
   }
 
