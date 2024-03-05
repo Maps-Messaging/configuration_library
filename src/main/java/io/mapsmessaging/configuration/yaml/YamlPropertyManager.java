@@ -71,7 +71,7 @@ public abstract class YamlPropertyManager extends PropertyManager {
     }
   }
 
-  protected String toYaml(String name){
+  protected String toYaml(){
     HashMap<String, Object> data = new LinkedHashMap<>(properties.getMap());
     if (properties.getGlobal() != null) {
       data.put(GLOBAL, new LinkedHashMap<>(properties.getGlobal().getMap()));

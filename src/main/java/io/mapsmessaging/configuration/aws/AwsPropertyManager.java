@@ -40,15 +40,15 @@ public class AwsPropertyManager extends YamlPropertyManager {
       String name = key.substring(serverPrefix.length());
       logger.log(AWS_PROPERTY_MANAGER_KEY_LOOKUP_SUCCESS, name, value.length());
       parseAndLoadYaml(name, value);
-    } catch (IOException AWSException) {
-      logger.log(AWS_PROPERTY_MANAGER_KEY_LOOKUP_EXCEPTION, key, AWSException);
+    } catch (IOException awsException) {
+      logger.log(AWS_PROPERTY_MANAGER_KEY_LOOKUP_EXCEPTION, key, awsException);
     }
   }
 
   @Override
   protected void store(String name) throws IOException {
     logger.log(AWS_PROPERTY_MANAGER_STORE, serverPrefix, name);
-    awsSsmApi.putValue(serverPrefix + name, toYaml(name));
+    awsSsmApi.putValue(serverPrefix + name, toYaml());
   }
 
   @Override
