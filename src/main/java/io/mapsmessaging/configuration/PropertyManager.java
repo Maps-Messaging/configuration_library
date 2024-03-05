@@ -67,6 +67,7 @@ public abstract class PropertyManager {
     return "";
   }
 
+
   public @NonNull @NotNull JSONObject getPropertiesJSON(@NonNull @NotNull String name) {
     JSONObject jsonObject = new JSONObject();
     Object config = properties.get(name);

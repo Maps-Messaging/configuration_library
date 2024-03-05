@@ -8,7 +8,9 @@ This library provides a flexible and powerful configuration solution for Java ap
 - **YAML Format**: Configuration files are written in YAML, a human-readable data serialization standard.
 - **Value Substitution**: Supports dynamic value substitution within your YAML files using `{{ }}` for system properties or environment variables.
 - **Native Types**: Supports native types like, long, String, float as well as size parameters, K, M, T etc
-- **Consul Key Namespace Walking**: For Consul configurations, the library will search up the key namespace for a "default" configuration file if the specific configuration is not found, following a predetermined path until a default is located or falling back on built-in defaults.
+- **Consul Support**: Support loading and saving configuration to Consul
+- **AWS System Manager Support**: Support for loading and saving configuration from AWS System Management Agent
+- **Consul and AWS Key Namespace Walking**: For Consul configurations, the library will search up the key namespace for a "default" configuration file if the specific configuration is not found, following a predetermined path until a default is located or falling back on built-in defaults.
 
 ## Getting Started
 

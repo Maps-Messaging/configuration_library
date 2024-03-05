@@ -70,6 +70,16 @@ public enum ConfigLogMessages implements LogMessage {
   CONSUL_PROPERTY_MANAGER_SAVE_ALL(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Saving all entries for {}"),
   CONSUL_PROPERTY_MANAGER_STORE(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Storing entry for {}"),
   //</editor-fold>
+
+  //<editor-fold desc="AWS Key/Value management log messages">
+  AWS_PROPERTY_MANAGER_NO_KEY_VALUES(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "No keys found in AWS Key/Value for id {}"),
+  AWS_PROPERTY_MANAGER_KEY_LOOKUP_EXCEPTION(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Key {}, lookup failed with exception"),
+  AWS_PROPERTY_MANAGER_KEY_LOOKUP_SUCCESS(LEVEL.INFO, CONFIG_CATEGORY.CONFIGURATION, "Key {}, lookup success, returned {} bytes"),
+
+  AWS_PROPERTY_MANAGER_INVALID_JSON(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Value returned is not valid json for key {}"),
+  AWS_PROPERTY_MANAGER_SAVE_ALL(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Saving all entries for {}"),
+  AWS_PROPERTY_MANAGER_STORE(LEVEL.ERROR, CONFIG_CATEGORY.CONFIGURATION, "Storing entry for {}"),
+  //</editor-fold>
   ;
 
   private final String message;
