@@ -38,7 +38,7 @@ public class ConsulPropertyManager extends RemotePropertyManager {
   protected void putValue(String name, String value) throws IOException {
     ConsulManagerFactory.getInstance()
         .getManager()
-        .putValue(serverPrefix + name, getPropertiesJSON(name).toString(2));
+        .putValue(name, getPropertiesJSON(name).toString(2));
   }
 
   @Override
