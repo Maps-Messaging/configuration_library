@@ -85,6 +85,6 @@ public class AwsSsmApi {
   }
 
   private String buildKey(String key){
-   return (prefix+key).replaceAll("//", "/");
+   return (prefix+key).replace("//", "/");
   }
 }
