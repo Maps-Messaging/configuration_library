@@ -17,6 +17,9 @@ public abstract class RemotePropertyManager extends YamlPropertyManager {
   private final Logger logger;
 
   protected RemotePropertyManager(String serverPrefix, Logger logger) {
+    if(!serverPrefix.endsWith("/")){
+      serverPrefix = serverPrefix+"/";
+    }
     this.serverPrefix = serverPrefix;
     this.logger = logger;
   }
@@ -36,7 +39,8 @@ public abstract class RemotePropertyManager extends YamlPropertyManager {
   protected void processKey(String key) {
     try {
       String value = getValue(key);
-      String name = key.substring(serverPrefix.length());
+      int stripLeadingSlash = (!key.startsWith(serverPrefix) && serverPrefix.startsWith("/")) ? 1 : 0;
+      String name = key.substring(serverPrefix.length()-stripLeadingSlash);
       logger.log(REMOTE_PROPERTY_MANAGER_KEY_LOOKUP_SUCCESS, name, value.length());
       parseAndLoadYaml(name, value);
     } catch (IOException awsException) {
