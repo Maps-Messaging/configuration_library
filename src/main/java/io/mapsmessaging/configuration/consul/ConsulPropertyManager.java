@@ -26,7 +26,7 @@ import java.util.List;
 
 public class ConsulPropertyManager extends RemotePropertyManager {
   public ConsulPropertyManager(String prefix) {
-    super(prefix, LoggerFactory.getLogger(ConsulPropertyManager.class));
+    super(fixPrefix(prefix), LoggerFactory.getLogger(ConsulPropertyManager.class));
   }
 
   @Override
@@ -38,7 +38,7 @@ public class ConsulPropertyManager extends RemotePropertyManager {
   protected void putValue(String name, String value) throws IOException {
     ConsulManagerFactory.getInstance()
         .getManager()
-        .putValue(name, getPropertiesJSON(name).toString(2));
+        .putValue(name, value);
   }
 
   @Override
@@ -51,5 +51,16 @@ public class ConsulPropertyManager extends RemotePropertyManager {
   @Override
   protected List<String> getAllKeys(String prefix) throws IOException {
     return ConsulManagerFactory.getInstance().getManager().getKeys(prefix);
+  }
+
+
+  private static String fixPrefix(String prefix){
+    if(prefix.startsWith("/")){
+      prefix = prefix.substring(1);
+    }
+    if(!prefix.endsWith("/")){
+      prefix = prefix+"/";
+    }
+    return prefix;
   }
 }

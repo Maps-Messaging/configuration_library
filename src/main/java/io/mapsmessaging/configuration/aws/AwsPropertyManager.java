@@ -11,7 +11,7 @@ public class AwsPropertyManager extends RemotePropertyManager {
   private final AwsSsmApi awsSsmApi;
 
   public AwsPropertyManager(String prefix) throws IOException {
-    super(prefix, LoggerFactory.getLogger(AwsPropertyManager.class));
+    super(fixPrefix(prefix), LoggerFactory.getLogger(AwsPropertyManager.class));
     awsSsmApi = new AwsSsmApi();
   }
 
@@ -33,5 +33,12 @@ public class AwsPropertyManager extends RemotePropertyManager {
   @Override
   protected List<String> getAllKeys(String prefix) throws IOException {
     return awsSsmApi.getKeys(prefix);
+  }
+
+  private static String fixPrefix(String prefix){
+    if(!prefix.endsWith("/")){
+      prefix = prefix+"/";
+    }
+    return prefix;
   }
 }

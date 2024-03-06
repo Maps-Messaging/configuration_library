@@ -17,9 +17,6 @@ public abstract class RemotePropertyManager extends YamlPropertyManager {
   private final Logger logger;
 
   protected RemotePropertyManager(String serverPrefix, Logger logger) {
-    if(!serverPrefix.endsWith("/")){
-      serverPrefix = serverPrefix+"/";
-    }
     this.serverPrefix = serverPrefix;
     this.logger = logger;
   }
