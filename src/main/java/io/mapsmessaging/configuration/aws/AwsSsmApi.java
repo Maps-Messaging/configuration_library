@@ -25,23 +25,32 @@ public class AwsSsmApi {
   public List<String> getKeys(String path) throws IOException {
     try {
       GetParametersByPathResponse response = ssmClient.getParametersByPath(GetParametersByPathRequest.builder()
-          .path(prefix+path)
+          .path(buildKey(path))
           .recursive(true)
           .build());
       List<String> keys = response.parameters().stream().map(Parameter::name).collect(Collectors.toList());
       return keys.stream()
-          .map(s -> s.startsWith(prefix) ? s.substring(prefix.length()) : s)
+          .map(this::processKey)
           .collect(Collectors.toList());
     } catch (SsmException e) {
       throw new IOException("Error retrieving keys from Parameter Store", e);
     }
   }
 
+  private String processKey(String key){
+    if(key.startsWith(prefix)){
+      key = key.substring(prefix.length());
+    }
+    if(!key.startsWith("/")){
+      key = "/"+key;
+    }
+    return key;
+  }
   // Retrieve a parameter value by name
   public String getValue(String key) throws IOException {
     try {
       GetParameterResponse response = ssmClient.getParameter(GetParameterRequest.builder()
-          .name(prefix+key)
+          .name(buildKey(key))
           .withDecryption(true)
           .build());
       return response.parameter().value();
@@ -54,7 +63,7 @@ public class AwsSsmApi {
   public void putValue(String key, String value) throws IOException {
     try {
       ssmClient.putParameter(PutParameterRequest.builder()
-          .name(prefix+key)
+          .name(buildKey(key))
           .value(value)
           .type(ParameterType.STRING)
           .overwrite(true)
@@ -68,10 +77,14 @@ public class AwsSsmApi {
   public void deleteKey(String key) throws IOException {
     try {
       ssmClient.deleteParameter(DeleteParameterRequest.builder()
-          .name(prefix+key)
+          .name(buildKey(key))
           .build());
     } catch (SsmException e) {
       throw new IOException("Error deleting key from Parameter Store", e);
     }
+  }
+
+  private String buildKey(String key){
+   return (prefix+key).replaceAll("//", "/");
   }
 }
