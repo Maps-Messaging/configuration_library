@@ -20,6 +20,9 @@ package io.mapsmessaging.configuration.yaml;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.configuration.PropertyManager;
 import io.mapsmessaging.configuration.parsers.JsonParser;
+import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.ByteArrayOutputStream;
@@ -46,8 +49,8 @@ public abstract class YamlPropertyManager extends PropertyManager {
     ConfigurationProperties configurationProperties = new ConfigurationProperties();
     for (Entry<String, Object> item : response.entrySet()) {
       Map<String, Object> entry = (Map<String, Object>) item.getValue();
-      if (entry.get("global") != null) {
-        Map<String, Object> global = (Map<String, Object>) entry.remove("global");
+      if (entry.get(GLOBAL) != null) {
+        Map<String, Object> global = (Map<String, Object>) entry.remove(GLOBAL);
         configurationProperties.setGlobal(new ConfigurationProperties(global));
       }
       configurationProperties.putAll(entry);
@@ -66,6 +69,19 @@ public abstract class YamlPropertyManager extends PropertyManager {
       Yaml yaml = new Yaml();
       yaml.dump(data, writer);
     }
+  }
+
+  protected String toYaml(){
+    HashMap<String, Object> data = new LinkedHashMap<>(properties.getMap());
+    if (properties.getGlobal() != null) {
+      data.put(GLOBAL, new LinkedHashMap<>(properties.getGlobal().getMap()));
+    }
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(10240);
+    try (PrintWriter writer = new PrintWriter(byteArrayOutputStream)) {
+      Yaml yaml = new Yaml();
+      yaml.dump(data, writer);
+    }
+    return byteArrayOutputStream.toString();
   }
 
   @Override

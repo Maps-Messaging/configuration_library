@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -70,6 +74,59 @@ public abstract class PropertyManagerTest {
     for(String key:manager.properties.keySet()) {
       ConfigurationProperties config = manager.getProperties(key);
       assertNotNull(config);
+    }
+  }
+
+  @Test
+  void getDefaultProperties() {
+    PropertyManager manager = new TestPropertyManager();
+    assertTrue(manager.properties.isEmpty());
+    manager.load();
+    assertFalse(manager.properties.isEmpty());
+    for(String key:manager.properties.keySet()) {
+      ConfigurationProperties config = manager.getProperties(key);
+      assertNotNull(config);
+    }
+    assertEquals("/global/eur/default", manager.scanForDefaultConfig("/global/eur/gb"));
+    assertEquals("/global/default", manager.scanForDefaultConfig("/global/na/us"));
+    assertEquals("/default", manager.scanForDefaultConfig("/local/aus/syd"));
+  }
+
+
+  public final class TestPropertyManager extends PropertyManager {
+
+
+
+    @Override
+    public void load() {
+      properties.put("/top", new LinkedHashMap<String, Object>());
+      properties.put("/default", new LinkedHashMap<String, Object>());
+      properties.put("/global/default", new LinkedHashMap<String, Object>());
+      properties.put("/global/eur/default", new LinkedHashMap<String, Object>());
+      properties.put("/global/eur/gb", new LinkedHashMap<String, Object>());
+      properties.put("/global/eur/it", new LinkedHashMap<String, Object>());
+      properties.put("/global/eur/de", new LinkedHashMap<String, Object>());
+      properties.put("/global/eur/fr", new LinkedHashMap<String, Object>());
+      properties.put("/global/asi/au", new LinkedHashMap<String, Object>());
+      properties.put("/global/asi/nz", new LinkedHashMap<String, Object>());
+      properties.put("/global/na/us", new LinkedHashMap<String, Object>());
+      // not required
+    }
+
+    @Override
+    protected void store(String name) throws IOException {
+      // not required
+    }
+
+    @Override
+    public void copy(PropertyManager propertyManager) throws IOException {
+      properties.clear();
+      properties.putAll(propertyManager.getProperties().getMap());
+    }
+
+    @Override
+    protected List<String> getKeys(String lookup) {
+      return new ArrayList<>(properties.keySet()).stream().filter(s -> s.startsWith(lookup)).collect(Collectors.toList());
     }
   }
 }

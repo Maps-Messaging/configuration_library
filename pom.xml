@@ -4,8 +4,8 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.mapsmessaging</groupId>
-    <artifactId>ConfigurationLibrary</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>configuration_library</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Configuration API</name>
@@ -81,14 +81,14 @@
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>simple_logging</artifactId>
-                    <version>2.0.11</version>
+                    <version>2.0.12</version>
                 </dependency>
 
                 <!-- Non Blocking Task Queue module -->
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>non_block_task_scheduler</artifactId>
-                    <version>2.1.8</version>
+                    <version>2.1.9</version>
                 </dependency>
 
             </dependencies>
@@ -135,13 +135,13 @@
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>simple_logging</artifactId>
-                    <version>2.0.12-SNAPSHOT</version>
+                    <version>2.0.13-SNAPSHOT</version>
                 </dependency>
                 <!-- Non Blocking Task Queue module -->
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>non_block_task_scheduler</artifactId>
-                    <version>2.1.9-SNAPSHOT</version>
+                    <version>2.1.10-SNAPSHOT</version>
                 </dependency>
 
             </dependencies>
@@ -299,6 +299,17 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.16.1</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/ssm -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>ssm</artifactId>
+            <version>2.24.6</version>
+        </dependency>
+
+
+
+
         <!-- Consul client API -->
         <dependency>
             <groupId>com.ecwid.consul</groupId>

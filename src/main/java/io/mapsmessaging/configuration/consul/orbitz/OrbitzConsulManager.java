@@ -105,6 +105,7 @@ public class OrbitzConsulManager extends ConsulServerApi implements ClientEventC
     registerPingTask();
   }
 
+  @Override
   public void stop() {
     super.stop();
     if (consulConfiguration.registerAgent()) {

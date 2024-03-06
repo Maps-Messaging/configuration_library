@@ -18,96 +18,49 @@
 package io.mapsmessaging.configuration.consul;
 
 
-import io.mapsmessaging.configuration.ConfigurationProperties;
-import io.mapsmessaging.configuration.PropertyManager;
-import io.mapsmessaging.configuration.yaml.YamlPropertyManager;
-import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.configuration.yaml.RemotePropertyManager;
 import io.mapsmessaging.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map.Entry;
 
-import static io.mapsmessaging.logging.ConfigLogMessages.*;
-
-public class ConsulPropertyManager extends YamlPropertyManager {
-
-  private final String serverPrefix;
-  private final Logger logger = LoggerFactory.getLogger(ConsulPropertyManager.class);
-
+public class ConsulPropertyManager extends RemotePropertyManager {
   public ConsulPropertyManager(String prefix) {
-    if (prefix.startsWith("/")) {
-      prefix = prefix.substring(1);
-    }
-    serverPrefix = prefix + "/";
+    super(fixPrefix(prefix), LoggerFactory.getLogger(ConsulPropertyManager.class));
   }
 
   @Override
-  public void load() {
-    try {
-      List<String> keys = ConsulManagerFactory.getInstance().getManager().getKeys(serverPrefix);
-      for (String key : keys) {
-        processKey(key);
-      }
-    } catch (IOException e) {
-      logger.log(CONSUL_PROPERTY_MANAGER_NO_KEY_VALUES, serverPrefix);
-    }
-  }
-
-  private void processKey(String key) {
-    try {
-      String value = ConsulManagerFactory.getInstance().getManager().getValue(key);
-      String name = key.substring(serverPrefix.length());
-      logger.log(CONSUL_PROPERTY_MANAGER_KEY_LOOKUP_SUCCESS, name, value.length());
-      parseAndLoadYaml(name, value);
-    } catch (IOException consulException) {
-      logger.log(CONSUL_PROPERTY_MANAGER_KEY_LOOKUP_EXCEPTION, key, consulException);
-    }
+  protected String getValue(String key) throws IOException {
+    return ConsulManagerFactory.getInstance().getManager().getValue(key);
   }
 
   @Override
-  protected void store(String name) throws IOException {
-    logger.log(CONSUL_PROPERTY_MANAGER_STORE, serverPrefix, name);
+  protected void putValue(String name, String value) throws IOException {
     ConsulManagerFactory.getInstance()
         .getManager()
-        .putValue(serverPrefix + name, getPropertiesJSON(name).toString(2));
+        .putValue(name, value);
   }
 
   @Override
-  public void copy(PropertyManager propertyManager) throws IOException {
-    // Remove what we have
-    for (String name : properties.keySet()) {
-      ConsulManagerFactory.getInstance()
-          .getManager()
-          .deleteKey(serverPrefix + name);
-    }
-
-    // Now let's add the new config
-    properties.clear();
-    properties.putAll(propertyManager.getProperties().getMap());
-    for (String key : properties.keySet()) {
-      ConfigurationProperties copy = (ConfigurationProperties) properties.get(key);
-      ConfigurationProperties orig = (ConfigurationProperties) propertyManager.getProperties().get(key);
-      copy.setSource(orig.getSource());
-    }
-
-
-    if (properties.getGlobal() != null) {
-      properties.getGlobal().clear();
-    }
-    if (propertyManager.getProperties().getGlobal() != null) {
-      properties.setGlobal(propertyManager.getProperties().getGlobal());
-    }
-    properties.setSource(propertyManager.getProperties().getSource());
-    save();
+  protected void deleteKey(String key) throws IOException {
+    ConsulManagerFactory.getInstance()
+        .getManager()
+        .deleteKey(key);
   }
 
-  public void save() throws IOException {
-    logger.log(CONSUL_PROPERTY_MANAGER_SAVE_ALL, serverPrefix);
-    for (Entry<String, Object> entry : properties.entrySet()) {
-      String source = ((ConfigurationProperties) entry.getValue()).getSource();
-      String key = serverPrefix.trim() + entry.getKey().trim();
-      ConsulManagerFactory.getInstance().getManager().putValue(key, source);
+  @Override
+  protected List<String> getAllKeys(String prefix) throws IOException {
+    return ConsulManagerFactory.getInstance().getManager().getKeys(prefix);
+  }
+
+
+  private static String fixPrefix(String prefix){
+    if(prefix.startsWith("/")){
+      prefix = prefix.substring(1);
     }
+    if(!prefix.endsWith("/")){
+      prefix = prefix+"/";
+    }
+    return prefix;
   }
 }

@@ -29,20 +29,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+@Getter
 public abstract class PropertyManager {
 
-  @Getter
   protected final ConfigurationProperties properties;
 
   protected PropertyManager() {
     properties = new ConfigurationProperties();
   }
 
-  protected abstract void load();
+  public abstract void load();
 
   protected abstract void store(String name) throws IOException;
 
   public abstract void copy(PropertyManager propertyManager) throws IOException;
+
+  protected abstract List<String> getKeys(String lookup);
+
+  public String scanForDefaultConfig(String namespace) {
+    if (!namespace.endsWith("/")) {
+      namespace = namespace + "/";
+    }
+    while (namespace.contains("/")) { // we have a depth
+      String lookup = namespace + "default";
+      List<String> keys = getKeys(lookup);
+      if (keys != null && !keys.isEmpty()) {
+        return lookup;
+      }
+      namespace = namespace.substring(0, namespace.length() - 1); // Remove the "/"
+      int idx = namespace.lastIndexOf("/");
+      if (idx >= 0 && namespace.length() > 1) {
+        namespace = namespace.substring(0, idx + 1); // Include the /
+      } else {
+        break;
+      }
+    }
+    return "";
+  }
+
 
   public @NonNull @NotNull JSONObject getPropertiesJSON(@NonNull @NotNull String name) {
     JSONObject jsonObject = new JSONObject();

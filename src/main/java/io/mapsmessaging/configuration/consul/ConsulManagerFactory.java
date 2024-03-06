@@ -31,6 +31,13 @@ import static io.mapsmessaging.logging.ConfigLogMessages.*;
 
 @SuppressWarnings("java:S6548") // yes it is a singleton
 public class ConsulManagerFactory {
+  private static class Holder {
+    static final ConsulManagerFactory INSTANCE = new ConsulManagerFactory();
+  }
+
+  public static ConsulManagerFactory getInstance() {
+    return Holder.INSTANCE;
+  }
 
   private final Logger logger = LoggerFactory.getLogger(ConsulManagerFactory.class);
   private final boolean forceWait;
@@ -46,9 +53,6 @@ public class ConsulManagerFactory {
     manager = null;
   }
 
-  public static ConsulManagerFactory getInstance() {
-    return Holder.INSTANCE;
-  }
 
   public void start(String serverId) {
     start(serverId, "ecwid" );
@@ -115,7 +119,4 @@ public class ConsulManagerFactory {
     return manager != null;
   }
 
-  private static class Holder {
-    static final ConsulManagerFactory INSTANCE = new ConsulManagerFactory();
-  }
 }
