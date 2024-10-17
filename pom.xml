@@ -130,6 +130,14 @@
                         <enabled>true</enabled>
                     </snapshots>
                 </repository>
+                <repository>
+                    <id>maps_test_snapshots</id>
+                    <name>maps_test_libs_repository</name>
+                    <url>https://repository.mapsmessaging.io:8081/repository/maps_test_libs/</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
             </repositories>
             <dependencies>
                 <dependency>
@@ -144,6 +152,12 @@
                     <version>2.1.10-SNAPSHOT</version>
                 </dependency>
 
+                <!-- Consul client API -->
+                <dependency>
+                    <groupId>com.ecwid.consul</groupId>
+                    <artifactId>consul-api</artifactId>
+                    <version>1.4.6</version>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>
@@ -305,22 +319,6 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>ssm</artifactId>
             <version>2.24.6</version>
-        </dependency>
-
-
-
-
-        <!-- Consul client API -->
-        <dependency>
-            <groupId>com.ecwid.consul</groupId>
-            <artifactId>consul-api</artifactId>
-            <version>1.4.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.orbitz.consul</groupId>
-            <artifactId>consul-client</artifactId>
-            <version>1.5.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->

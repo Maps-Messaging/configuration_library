@@ -17,7 +17,7 @@ class ConsulPropertyManagerTest {
   static Stream<Arguments> driverNames() {
 
     List<Arguments> argumentsList = new ArrayList<>();
-    String[] connectionTypes = {"ecwid", "orbitz"};
+    String[] connectionTypes = {"ecwid"};
     for (String connectionType : connectionTypes) {
       argumentsList.add(Arguments.of(connectionType));
     }
@@ -26,7 +26,7 @@ class ConsulPropertyManagerTest {
 
 
   @BeforeAll
-  public static void beforeMethod() throws IOException {
+  public static void beforeMethod() {
     System.setProperty("ConsulUrl", "http://10.140.62.12:8500");
   }
 
@@ -38,8 +38,8 @@ class ConsulPropertyManagerTest {
     ConsulManagerFactory.getInstance().stop();
   }
 
-  private void startManager(String driver) throws IOException {
-    ConsulManagerFactory.getInstance().start("/test/", driver);
+  private void startManager() throws IOException {
+    ConsulManagerFactory.getInstance().start("/test/");
     Assumptions.assumeTrue(ConsulManagerFactory.getInstance().getManager() != null);
     for(String key:ConsulManagerFactory.getInstance().getManager().getKeys("/test/")){
       ConsulManagerFactory.getInstance().getManager().deleteKey(key);
@@ -48,10 +48,9 @@ class ConsulPropertyManagerTest {
   }
 
   @DisplayName("test valid load")
-  @ParameterizedTest
-  @MethodSource("driverNames")
-  void load(String driver) throws IOException {
-    startManager(driver);
+  @Test
+  void load() throws IOException {
+    startManager();
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     propertyManager.load();
     System.err.println(propertyManager.toString());
@@ -59,10 +58,9 @@ class ConsulPropertyManagerTest {
 
 
   @DisplayName("Ensure we can sve the config")
-  @ParameterizedTest
-  @MethodSource("driverNames")
-  void store(String driver) throws IOException {
-    startManager(driver);
+  @Test
+  void store() throws IOException {
+    startManager();
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     ConfigurationProperties properties = loadProperties();
     propertyManager.getProperties().put("data", properties);
@@ -73,10 +71,9 @@ class ConsulPropertyManagerTest {
   }
 
   @DisplayName("Ensure we can sve the config")
-  @ParameterizedTest
-  @MethodSource("driverNames")
-  void copy(String driver) throws IOException {
-    startManager(driver);
+  @Test
+  void copy() throws IOException {
+    startManager();
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     ConfigurationProperties properties = loadProperties();
     propertyManager.getProperties().put("data", properties);
