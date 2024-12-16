@@ -132,7 +132,7 @@ public abstract class PropertyManagerTest {
     }
 
     @Override
-    protected void store(String name) throws IOException {
+    public void store(String name) throws IOException {
       // not required
     }
 

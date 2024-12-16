@@ -61,7 +61,7 @@ public abstract class YamlPropertyManager extends PropertyManager {
   }
 
   @Override
-  protected void store(String name) throws IOException {
+  public void store(String name) throws IOException {
     HashMap<String, Object> data = new LinkedHashMap<>(properties.getMap());
     if (properties.getGlobal() != null) {
       data.put(GLOBAL, new LinkedHashMap<>(properties.getGlobal().getMap()));

@@ -41,7 +41,7 @@ public abstract class PropertyManager {
 
   public abstract void load();
 
-  protected abstract void store(String name) throws IOException;
+  public abstract void store(String name) throws IOException;
 
   public abstract void copy(PropertyManager propertyManager) throws IOException;
 
