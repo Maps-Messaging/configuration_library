@@ -64,9 +64,15 @@ public abstract class RemotePropertyManager extends YamlPropertyManager {
   }
 
   @Override
-  public void store(String name) throws IOException {
+  public void storeAll(String name) throws IOException {
     logger.log(REMOTE_PROPERTY_MANAGER_STORE, serverPrefix, name);
     putValue(serverPrefix + name, toYaml());
+  }
+
+  @Override
+  public void store(String path, String key) throws IOException {
+    logger.log(REMOTE_PROPERTY_MANAGER_STORE, serverPrefix, key);
+    putValue(serverPrefix + key, toYaml());
   }
 
   @Override

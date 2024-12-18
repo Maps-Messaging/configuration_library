@@ -283,6 +283,13 @@ public class ConfigurationProperties {
     return map.keySet();
   }
 
+  public void replace(String key, Object val) {
+    if(val instanceof ConfigurationProperties) {
+      ConfigurationProperties props = (ConfigurationProperties) val;
+      map.replace(key, props);
+    }
+  }
+
   public void put(String key, Object val) {
     if (val instanceof Map) {
       ConfigurationProperties props = new ConfigurationProperties((Map<String, Object>) val);
@@ -295,6 +302,11 @@ public class ConfigurationProperties {
           ConfigurationProperties props = new ConfigurationProperties((Map<String, Object>) list);
           props.setGlobal(global);
           parsedList.add(props);
+        }
+        else{
+          if(list instanceof ConfigurationProperties) {
+            parsedList.add(list);
+          }
         }
       }
       map.put(key, parsedList);

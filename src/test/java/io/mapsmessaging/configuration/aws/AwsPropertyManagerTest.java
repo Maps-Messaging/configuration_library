@@ -72,7 +72,7 @@ class AwsPropertyManagerTest {
     AwsPropertyManager propertyManager = new AwsPropertyManager("/test/storeTest");
     ConfigurationProperties properties = loadProperties();
     propertyManager.getProperties().put("data", properties);
-    propertyManager.store("data");
+    propertyManager.storeAll("data");
     AwsPropertyManager manager = new AwsPropertyManager("/test/storeTest");
     manager.load();
     Assertions.assertNotNull(manager.getProperties());
@@ -84,7 +84,7 @@ class AwsPropertyManagerTest {
     AwsPropertyManager propertyManager = new AwsPropertyManager("/test/storeTest");
     ConfigurationProperties properties = loadProperties();
     propertyManager.getProperties().put("data", properties);
-    propertyManager.store("data");
+    propertyManager.storeAll("data");
     AwsPropertyManager reloaded = new AwsPropertyManager("/test/storeTest");
     reloaded.load();
 

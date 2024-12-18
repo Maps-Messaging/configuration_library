@@ -21,9 +21,7 @@ package io.mapsmessaging.configuration.consul;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,7 +80,7 @@ class ConsulPropertyManagerTest {
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     ConfigurationProperties properties = loadProperties();
     propertyManager.getProperties().put("data", properties);
-    propertyManager.store("data");
+    propertyManager.storeAll("data");
     ConsulPropertyManager manager = new ConsulPropertyManager("/test/storeTest");
     manager.load();
     Assertions.assertNotNull(manager.getProperties());
@@ -95,7 +93,7 @@ class ConsulPropertyManagerTest {
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     ConfigurationProperties properties = loadProperties();
     propertyManager.getProperties().put("data", properties);
-    propertyManager.store("data");
+    propertyManager.storeAll("data");
     ConsulPropertyManager reloaded = new ConsulPropertyManager("/test/storeTest");
     reloaded.load();
 

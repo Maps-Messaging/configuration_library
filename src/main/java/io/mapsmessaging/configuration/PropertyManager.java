@@ -41,9 +41,16 @@ public abstract class PropertyManager {
 
   public abstract void load();
 
-  public abstract void store(String name) throws IOException;
+  public abstract void storeAll(String path) throws IOException;
+
+  public abstract void store(String path, String key) throws IOException;
 
   public abstract void copy(PropertyManager propertyManager) throws IOException;
+
+  public void update(String path, String name, ConfigurationProperties newProps) throws IOException{
+    properties.replace(name, newProps);
+    store(path, name);
+  }
 
   protected abstract List<String> getKeys(String lookup);
 

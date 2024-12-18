@@ -43,7 +43,7 @@ public abstract class PropertyManagerTest {
   }
 
   @Test
-  void store() throws IOException {
+  void storeAll() throws IOException {
     PropertyManager manager = create();
     assertTrue(manager.properties.isEmpty());
     manager.load();
@@ -52,10 +52,29 @@ public abstract class PropertyManagerTest {
     if(outFile.exists()){
       outFile.delete();
     }
-    manager.store(outFile.getAbsolutePath());
+    manager.storeAll(outFile.getAbsolutePath());
     assertTrue(outFile.exists());
     assertTrue(outFile.delete());
   }
+
+  @Test
+  void store() throws IOException {
+    PropertyManager manager = create();
+    assertTrue(manager.properties.isEmpty());
+    manager.load();
+    assertFalse(manager.properties.isEmpty());
+    File outFile = new File("./test1.yaml");
+    if(outFile.exists()){
+      outFile.delete();
+    }
+    ConfigurationProperties prop = manager.getProperties("test1");
+    prop.put("Updatedkey", "updated value");
+    manager.update(".", "test1", prop);
+    manager.storeAll(outFile.getAbsolutePath());
+    assertTrue(outFile.exists());
+    assertTrue(outFile.delete());
+  }
+
 
   @Test
   void copy() throws IOException {
@@ -132,8 +151,13 @@ public abstract class PropertyManagerTest {
     }
 
     @Override
-    public void store(String name) throws IOException {
+    public void storeAll(String name) throws IOException {
       // not required
+    }
+
+    @Override
+    public void store(String path, String key) throws IOException {
+
     }
 
     @Override
