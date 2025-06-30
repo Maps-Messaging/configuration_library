@@ -43,8 +43,8 @@ class ConsulPropertyManagerTest {
 
 
   @BeforeAll
-  public static void beforeMethod() {
-    System.setProperty("ConsulUrl", "http://10.140.62.12:8500");
+  static void beforeMethod() {
+    System.setProperty("ConsulUrl",  System.getenv("CONSUL_ENV"));
   }
 
   @AfterEach

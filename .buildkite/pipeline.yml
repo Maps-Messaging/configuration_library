@@ -6,6 +6,7 @@ steps:
       - echo "aws.region=ap-southeast-2" >> s3.properties
       - echo "applicationName=/mapsMessagingTest/" >> s3.properties
       - export NVD_API_KEY=$(buildkite-agent secret get nvd_api_key)
+      - export CONSUL_URL=$(buildkite-agent secret get consul_url)
       - mvn -Dgpg.skip=true clean deploy -Psnapshot
       - mvn sonar:sonar -Dsonar.login=$(buildkite-agent secret get SONAR_TOKEN)
     plugins:
