@@ -1,0 +1,19 @@
+steps:
+  - label: ":maven: Build and Deploy"
+    command:
+      - echo "aws.accessKey=$(buildkite-agent secret get aws_access_key)" > s3.properties
+      - echo "aws.secretKey=$(buildkite-agent secret get aws_secret_key)" >> s3.properties
+      - echo "aws.region=ap-southeast-2" >> s3.properties
+      - echo "applicationName=/mapsMessagingTest/" >> s3.properties
+      - export NVD_API_KEY=$(buildkite-agent secret get nvd_api_key)
+      - mvn -Dgpg.skip=true clean deploy -Psnapshot
+      - mvn sonar:sonar -Dsonar.login=$(buildkite-agent secret get SONAR_TOKEN)
+    plugins:
+      - test-collector#v1.0.0:
+          files: "target/surefire-reports/*.xml"
+          format: "junit"
+    env:
+      BUILDKITE_ANALYTICS_TOKEN: "$(buildkite-agent secret get ConfigurationLibraryBuildkiteToken)"
+
+    agents:
+      queue: "java_build_queue"
