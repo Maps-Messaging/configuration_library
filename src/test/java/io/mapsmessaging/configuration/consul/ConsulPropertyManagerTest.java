@@ -44,7 +44,7 @@ class ConsulPropertyManagerTest {
 
   @BeforeAll
   static void beforeMethod() {
-    System.setProperty("ConsulUrl",  System.getenv("CONSUL_ENV"));
+    System.setProperty("ConsulUrl",  System.getenv("CONSUL_URL"));
   }
 
   @AfterEach
