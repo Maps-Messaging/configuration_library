@@ -66,8 +66,8 @@ public class ConfigurationProperties {
     }
     if (val instanceof JsonObject) {
       Type type = new TypeToken<Map<String, Object>>() {}.getType();
-      Map<String, Object> map = SystemProperties.getInstance().getGson().fromJson((JsonObject) val, type);
-      return new ConfigurationProperties(map);
+      Map<String, Object> map1 = SystemProperties.getInstance().getGson().fromJson((JsonObject) val, type);
+      return new ConfigurationProperties(map1);
     }
     return val;
   }

@@ -24,6 +24,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
 @ToString
@@ -79,13 +80,15 @@ public class ConsulConfiguration {
 
   private String removePath(String urlString) {
     try {
-      URL url = new URL(urlString);
-      return url.getPort() != -1 ? url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() : url.getProtocol() + "://" + url.getHost();
-    } catch (MalformedURLException e) {
+      URI uri = URI.create(urlString);
+      int port = uri.getPort();
+      return port != -1 ? uri.getScheme() + "://" + uri.getHost() + ":" + port : uri.getScheme() + "://" + uri.getHost();
+    } catch (IllegalArgumentException e) {
       // ignore
     }
     return urlString;
   }
+
 
   private String removeToken(String url) {
     if (url.contains("@")) {
@@ -100,13 +103,10 @@ public class ConsulConfiguration {
 
   private String extractPath(String urlString) {
     try {
-      URL url = new URL(urlString);
-      String path = url.getPath().trim();
-      if (path.isEmpty()) {
-        path = "/";
-      }
-      return path;
-    } catch (MalformedURLException e) {
+      URI uri = URI.create(urlString);
+      String path = uri.getPath().trim();
+      return path.isEmpty() ? "/" : path;
+    } catch (IllegalArgumentException e) {
       // ignore
     }
     return "/";

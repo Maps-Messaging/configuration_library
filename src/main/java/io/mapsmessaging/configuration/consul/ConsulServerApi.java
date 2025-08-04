@@ -66,7 +66,7 @@ public abstract class ConsulServerApi implements Runnable {
           break;
         }
       }
-    } catch (Throwable exceptionInInitializerError) {
+    } catch (Exception exceptionInInitializerError) {
       logger.log(CONSUL_CLIENT_EXCEPTION, exceptionInInitializerError);
     }
     return "";
