@@ -23,9 +23,7 @@ import io.mapsmessaging.configuration.SystemProperties;
 import lombok.Data;
 import lombok.ToString;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 
 @ToString
 @Data
