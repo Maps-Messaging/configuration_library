@@ -1,28 +1,32 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ *  Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  *
  */
 
 package io.mapsmessaging.configuration;
 
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import lombok.Getter;
 import lombok.Setter;
-import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
@@ -60,11 +64,14 @@ public class ConfigurationProperties {
     if (val == null && global != null) {
       val = global.get(key);
     }
-    if (val instanceof JSONObject) {
-      return new ConfigurationProperties(((JSONObject) val).toMap());
+    if (val instanceof JsonObject) {
+      Type type = new TypeToken<Map<String, Object>>() {}.getType();
+      Map<String, Object> map1 = SystemProperties.getInstance().getGson().fromJson((JsonObject) val, type);
+      return new ConfigurationProperties(map1);
     }
     return val;
   }
+
 
   public String getProperty(String key) {
     return getProperty(key, null);
@@ -282,6 +289,13 @@ public class ConfigurationProperties {
     return map.keySet();
   }
 
+  public void replace(String key, Object val) {
+    if(val instanceof ConfigurationProperties) {
+      ConfigurationProperties props = (ConfigurationProperties) val;
+      map.replace(key, props);
+    }
+  }
+
   public void put(String key, Object val) {
     if (val instanceof Map) {
       ConfigurationProperties props = new ConfigurationProperties((Map<String, Object>) val);
@@ -294,6 +308,11 @@ public class ConfigurationProperties {
           ConfigurationProperties props = new ConfigurationProperties((Map<String, Object>) list);
           props.setGlobal(global);
           parsedList.add(props);
+        }
+        else{
+          if(list instanceof ConfigurationProperties) {
+            parsedList.add(list);
+          }
         }
       }
       map.put(key, parsedList);

@@ -1,11 +1,28 @@
+/*
+ *  Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
 package io.mapsmessaging.configuration.consul;
 
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +34,7 @@ class ConsulPropertyManagerTest {
   static Stream<Arguments> driverNames() {
 
     List<Arguments> argumentsList = new ArrayList<>();
-    String[] connectionTypes = {"ecwid", "orbitz"};
+    String[] connectionTypes = {"ecwid"};
     for (String connectionType : connectionTypes) {
       argumentsList.add(Arguments.of(connectionType));
     }
@@ -26,8 +43,8 @@ class ConsulPropertyManagerTest {
 
 
   @BeforeAll
-  public static void beforeMethod() throws IOException {
-    System.setProperty("ConsulUrl", "http://10.140.62.12:8500");
+  static void beforeMethod() {
+    System.setProperty("ConsulUrl",  System.getenv("CONSUL_URL"));
   }
 
   @AfterEach
@@ -38,8 +55,8 @@ class ConsulPropertyManagerTest {
     ConsulManagerFactory.getInstance().stop();
   }
 
-  private void startManager(String driver) throws IOException {
-    ConsulManagerFactory.getInstance().start("/test/", driver);
+  private void startManager() throws IOException {
+    ConsulManagerFactory.getInstance().start("/test/");
     Assumptions.assumeTrue(ConsulManagerFactory.getInstance().getManager() != null);
     for(String key:ConsulManagerFactory.getInstance().getManager().getKeys("/test/")){
       ConsulManagerFactory.getInstance().getManager().deleteKey(key);
@@ -48,10 +65,9 @@ class ConsulPropertyManagerTest {
   }
 
   @DisplayName("test valid load")
-  @ParameterizedTest
-  @MethodSource("driverNames")
-  void load(String driver) throws IOException {
-    startManager(driver);
+  @Test
+  void load() throws IOException {
+    startManager();
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     propertyManager.load();
     System.err.println(propertyManager.toString());
@@ -59,28 +75,26 @@ class ConsulPropertyManagerTest {
 
 
   @DisplayName("Ensure we can sve the config")
-  @ParameterizedTest
-  @MethodSource("driverNames")
-  void store(String driver) throws IOException {
-    startManager(driver);
+  @Test
+  void store() throws IOException {
+    startManager();
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     ConfigurationProperties properties = loadProperties();
     propertyManager.getProperties().put("data", properties);
-    propertyManager.store("data");
+    propertyManager.storeAll("data");
     ConsulPropertyManager manager = new ConsulPropertyManager("/test/storeTest");
     manager.load();
     Assertions.assertNotNull(manager.getProperties());
   }
 
   @DisplayName("Ensure we can sve the config")
-  @ParameterizedTest
-  @MethodSource("driverNames")
-  void copy(String driver) throws IOException {
-    startManager(driver);
+  @Test
+  void copy() throws IOException {
+    startManager();
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     ConfigurationProperties properties = loadProperties();
     propertyManager.getProperties().put("data", properties);
-    propertyManager.store("data");
+    propertyManager.storeAll("data");
     ConsulPropertyManager reloaded = new ConsulPropertyManager("/test/storeTest");
     reloaded.load();
 

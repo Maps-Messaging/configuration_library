@@ -1,6 +1,25 @@
+/*
+ *  Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
 package io.mapsmessaging.configuration;
 
-import org.json.JSONObject;
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -25,7 +44,7 @@ public abstract class PropertyManagerTest {
   }
 
   @Test
-  void store() throws IOException {
+  void storeAll() throws IOException {
     PropertyManager manager = create();
     assertTrue(manager.properties.isEmpty());
     manager.load();
@@ -34,10 +53,29 @@ public abstract class PropertyManagerTest {
     if(outFile.exists()){
       outFile.delete();
     }
-    manager.store(outFile.getAbsolutePath());
+    manager.storeAll(outFile.getAbsolutePath());
     assertTrue(outFile.exists());
     assertTrue(outFile.delete());
   }
+
+  @Test
+  void store() throws IOException {
+    PropertyManager manager = create();
+    assertTrue(manager.properties.isEmpty());
+    manager.load();
+    assertFalse(manager.properties.isEmpty());
+    File outFile = new File("./test1.yaml");
+    if(outFile.exists()){
+      outFile.delete();
+    }
+    ConfigurationProperties prop = manager.getProperties("test1");
+    prop.put("Updatedkey", "updated value");
+    manager.update(".", "test1", prop);
+    manager.storeAll(outFile.getAbsolutePath());
+    assertTrue(outFile.exists());
+    assertTrue(outFile.delete());
+  }
+
 
   @Test
   void copy() throws IOException {
@@ -60,7 +98,7 @@ public abstract class PropertyManagerTest {
     manager.load();
     assertFalse(manager.properties.isEmpty());
     for(String key:manager.properties.keySet()) {
-      JSONObject jsonObject = manager.getPropertiesJSON(key);
+      JsonObject jsonObject = manager.getPropertiesJSON(key);
       assertNotNull(jsonObject);
     }
   }
@@ -114,8 +152,13 @@ public abstract class PropertyManagerTest {
     }
 
     @Override
-    protected void store(String name) throws IOException {
+    public void storeAll(String name) throws IOException {
       // not required
+    }
+
+    @Override
+    public void store(String path, String key) throws IOException {
+
     }
 
     @Override

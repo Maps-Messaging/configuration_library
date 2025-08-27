@@ -1,17 +1,19 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ *  Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  *
  */
 
@@ -21,8 +23,7 @@ import io.mapsmessaging.configuration.SystemProperties;
 import lombok.Data;
 import lombok.ToString;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 
 @ToString
 @Data
@@ -77,13 +78,15 @@ public class ConsulConfiguration {
 
   private String removePath(String urlString) {
     try {
-      URL url = new URL(urlString);
-      return url.getPort() != -1 ? url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() : url.getProtocol() + "://" + url.getHost();
-    } catch (MalformedURLException e) {
+      URI uri = URI.create(urlString);
+      int port = uri.getPort();
+      return port != -1 ? uri.getScheme() + "://" + uri.getHost() + ":" + port : uri.getScheme() + "://" + uri.getHost();
+    } catch (IllegalArgumentException e) {
       // ignore
     }
     return urlString;
   }
+
 
   private String removeToken(String url) {
     if (url.contains("@")) {
@@ -98,13 +101,10 @@ public class ConsulConfiguration {
 
   private String extractPath(String urlString) {
     try {
-      URL url = new URL(urlString);
-      String path = url.getPath().trim();
-      if (path.isEmpty()) {
-        path = "/";
-      }
-      return path;
-    } catch (MalformedURLException e) {
+      URI uri = URI.create(urlString);
+      String path = uri.getPath().trim();
+      return path.isEmpty() ? "/" : path;
+    } catch (IllegalArgumentException e) {
       // ignore
     }
     return "/";
