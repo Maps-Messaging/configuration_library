@@ -24,7 +24,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.mapsmessaging</groupId>
     <artifactId>configuration_library</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>Configuration API</name>
@@ -67,8 +67,8 @@
 
     <properties>
         <nvd.api.key>${env.NVD_API_KEY}</nvd.api.key>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.keyname>matthew.buckton@mapsmessaging.io</gpg.keyname>
 
@@ -101,41 +101,45 @@
         <profile>
             <!-- Default profile for regular releases -->
             <id>release</id>
+            <properties>
+                <maven.deploy.skip>true</maven.deploy.skip>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>simple_logging</artifactId>
-                    <version>2.0.12</version>
+                    <version>2.1.0</version>
                 </dependency>
 
                 <!-- Non Blocking Task Queue module -->
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>non_block_task_scheduler</artifactId>
-                    <version>2.1.9</version>
+                    <version>2.2.0</version>
                 </dependency>
 
             </dependencies>
-            <distributionManagement>
-                <repository>
-                    <id>ossrh</id>
-                    <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-            </distributionManagement>
             <build>
                 <plugins>
+                    <!-- Central publisher -->
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.13</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <serverId>mapsmessaging.io</serverId>
-                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                        </configuration>
+                    </plugin>
+
+                    <!-- Disable default deploy for releases -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>3.1.1</version>
+                        <configuration>
+                            <skip>true</skip>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -154,33 +158,18 @@
                         <enabled>true</enabled>
                     </snapshots>
                 </repository>
-                <repository>
-                    <id>maps_test_snapshots</id>
-                    <name>maps_test_libs_repository</name>
-                    <url>https://repository.mapsmessaging.io/repository/maps_test_libs/</url>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
             </repositories>
             <dependencies>
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>simple_logging</artifactId>
-                    <version>2.0.13-SNAPSHOT</version>
+                    <version>2.1.1-SNAPSHOT</version>
                 </dependency>
                 <!-- Non Blocking Task Queue module -->
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>non_block_task_scheduler</artifactId>
-                    <version>2.1.10-SNAPSHOT</version>
-                </dependency>
-
-                <!-- Consul client API -->
-                <dependency>
-                    <groupId>com.ecwid.consul</groupId>
-                    <artifactId>consul-api</artifactId>
-                    <version>1.4.6</version>
+                    <version>2.2.1-SNAPSHOT</version>
                 </dependency>
             </dependencies>
         </profile>
@@ -193,11 +182,18 @@
             <name>maps_snapshot_repository</name>
             <url>https://repository.mapsmessaging.io/repository/maps_snapshots/</url>
         </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>maps_test_snapshots</id>
+            <name>maps_test_libs_repository</name>
+            <url>https://repository.mapsmessaging.io/repository/maps_test_libs/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -371,6 +367,13 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.16.1</version>
+        </dependency>
+
+        <!-- Consul client API -->
+        <dependency>
+            <groupId>com.ecwid.consul</groupId>
+            <artifactId>consul-api</artifactId>
+            <version>1.4.6</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/ssm -->
