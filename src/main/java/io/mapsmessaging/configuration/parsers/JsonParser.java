@@ -19,12 +19,10 @@
 
 package io.mapsmessaging.configuration.parsers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import io.mapsmessaging.configuration.SystemProperties;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.List;

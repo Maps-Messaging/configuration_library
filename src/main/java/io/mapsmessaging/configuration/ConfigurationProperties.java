@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import static io.mapsmessaging.logging.LogMessages.PROPERTY_MANAGER_ENTRY_LOOKUP;
 import static io.mapsmessaging.logging.LogMessages.PROPERTY_MANAGER_ENTRY_LOOKUP_FAILED;
 
+@SuppressWarnings("java:S3740")
 public class ConfigurationProperties {
 
   private final Logger logger = LoggerFactory.getLogger(ConfigurationProperties.class);
@@ -54,8 +55,8 @@ public class ConfigurationProperties {
     putAll(inMap);
 
     Object globalObject = inMap.get("global");
-    if (globalObject instanceof ConfigurationProperties) {
-      this.global = (ConfigurationProperties) globalObject;
+    if (globalObject instanceof ConfigurationProperties globConf) {
+      this.global = globConf;
     }
   }
 
@@ -64,9 +65,9 @@ public class ConfigurationProperties {
     if (val == null && global != null) {
       val = global.get(key);
     }
-    if (val instanceof JsonObject) {
+    if (val instanceof JsonObject jsonObject) {
       Type type = new TypeToken<Map<String, Object>>() {}.getType();
-      Map<String, Object> map1 = SystemProperties.getInstance().getGson().fromJson((JsonObject) val, type);
+      Map<String, Object> map1 = SystemProperties.getInstance().getGson().fromJson(jsonObject, type);
       return new ConfigurationProperties(map1);
     }
     return val;
@@ -147,31 +148,31 @@ public class ConfigurationProperties {
   }
 
   private boolean asBoolean(Object value) {
-    if (value instanceof Boolean) {
-      return (Boolean) value;
-    } else if (value instanceof String) {
-      if (((String) value).equalsIgnoreCase("enable")) {
+    if (value instanceof Boolean b) {
+      return b;
+    } else if (value instanceof String sval) {
+      if (sval.equalsIgnoreCase("enable")) {
         return true;
       }
-      if (((String) value).equalsIgnoreCase("disable")) {
+      if (sval.equalsIgnoreCase("disable")) {
         return false;
       }
-      return Boolean.parseBoolean(((String) value).trim());
+      return Boolean.parseBoolean(sval.trim());
     }
     return false;
   }
 
   private long asLong(Object entry) {
-    if (entry instanceof Number) {
-      if (entry instanceof Float) {
-        return Math.round((float) entry);
+    if (entry instanceof Number eNum) {
+      if (eNum instanceof Float fl) {
+        return Math.round(fl);
       }
-      if (entry instanceof Double) {
-        return Math.round((double) entry);
+      if (eNum instanceof Double db) {
+        return Math.round(db);
       }
-      return ((Number) entry).longValue();
-    } else if (entry instanceof String) {
-      String value = ((String) entry).trim();
+      return eNum.longValue();
+    } else if (entry instanceof String sval) {
+      String value = sval.trim();
       if (value.contains(".")) {
         double d = asDouble(value);
         return Math.round(d);
@@ -220,10 +221,10 @@ public class ConfigurationProperties {
   }
 
   private double asDouble(Object entry) {
-    if (entry instanceof Number) {
-      return ((Number) entry).doubleValue();
-    } else if (entry instanceof String) {
-      return Double.parseDouble(((String) entry).trim());
+    if (entry instanceof Number num) {
+      return num.doubleValue();
+    } else if (entry instanceof String str) {
+      return Double.parseDouble(str.trim());
     }
     throw new NumberFormatException("Unknown number format detected [" + entry + "]");
   }
@@ -247,10 +248,10 @@ public class ConfigurationProperties {
 
   @Override
   public boolean equals(Object object) {
-    if (object instanceof ConfigurationProperties) {
+    if (object instanceof ConfigurationProperties cfg) {
       boolean listEquals = super.equals(object);
       if (global != null) {
-        return listEquals && global.equals(((ConfigurationProperties) object).global);
+        return listEquals && global.equals(cfg.global);
       }
       return listEquals;
     }
@@ -290,22 +291,22 @@ public class ConfigurationProperties {
   }
 
   public void replace(String key, Object val) {
-    if(val instanceof ConfigurationProperties) {
-      ConfigurationProperties props = (ConfigurationProperties) val;
-      map.replace(key, props);
+    if(val instanceof ConfigurationProperties cfg) {
+      map.replace(key, cfg);
     }
   }
 
+  @SuppressWarnings("java:S3740")
   public void put(String key, Object val) {
-    if (val instanceof Map) {
-      ConfigurationProperties props = new ConfigurationProperties((Map<String, Object>) val);
+    if (val instanceof Map map1) {
+      ConfigurationProperties props = new ConfigurationProperties(map1);
       props.setGlobal(global);
       map.put(key, props);
-    } else if (val instanceof List) {
+    } else if (val instanceof List list1) {
       List<Object> parsedList = new ArrayList<>();
-      for (Object list : (List<Object>) val) {
-        if (list instanceof Map) {
-          ConfigurationProperties props = new ConfigurationProperties((Map<String, Object>) list);
+      for (Object list : list1) {
+        if (list instanceof Map map2) {
+          ConfigurationProperties props = new ConfigurationProperties(map2);
           props.setGlobal(global);
           parsedList.add(props);
         }
@@ -342,18 +343,17 @@ public class ConfigurationProperties {
   private Map<String, Object> packMap(Map<String, Object> map) {
     Map<String, Object> response = new LinkedHashMap<>();
     for (Entry<String, Object> entry : map.entrySet()) {
-      if (entry.getValue() instanceof ConfigurationProperties) {
-        response.put(entry.getKey(), packMap(((ConfigurationProperties) entry.getValue()).map));
-      } else if (entry.getValue() instanceof Map) {
-        response.put(entry.getKey(), packMap((Map<String, Object>) entry.getValue()));
-      } else if (entry.getValue() instanceof List) {
-        List<Object> list = (List<Object>) entry.getValue();
+      if (entry.getValue() instanceof ConfigurationProperties cfg) {
+        response.put(entry.getKey(), packMap(cfg.map));
+      } else if (entry.getValue() instanceof Map mapEntry) {
+        response.put(entry.getKey(), packMap(mapEntry));
+      } else if (entry.getValue() instanceof List list) {
         List<Object> replacement = new ArrayList<>();
         for (Object obj : list) {
-          if (obj instanceof Map) {
-            replacement.add(packMap((Map<String, Object>) obj));
-          } else if (obj instanceof ConfigurationProperties) {
-            replacement.add(packMap(((ConfigurationProperties) obj).getMap()));
+          if (obj instanceof Map mapEntry) {
+            replacement.add(packMap(mapEntry));
+          } else if (obj instanceof ConfigurationProperties cfg) {
+            replacement.add(packMap(cfg.getMap()));
           } else {
             replacement.add(obj);
           }

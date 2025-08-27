@@ -25,7 +25,6 @@ import com.google.gson.reflect.TypeToken;
 import io.mapsmessaging.configuration.SystemProperties;
 import io.mapsmessaging.configuration.parsers.JsonParser;
 
-
 import java.lang.reflect.Type;
 import java.util.Map;
 

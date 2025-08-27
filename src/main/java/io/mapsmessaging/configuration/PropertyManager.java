@@ -19,8 +19,6 @@
 
 package io.mapsmessaging.configuration;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.Getter;
@@ -35,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 @Getter
+@SuppressWarnings("java:S3740")
 public abstract class PropertyManager {
 
   protected final ConfigurationProperties properties;
@@ -79,17 +78,17 @@ public abstract class PropertyManager {
     return "";
   }
 
-
+  @SuppressWarnings("unchecked")
   public @NonNull @NotNull JsonObject getPropertiesJSON(@NonNull @NotNull String name) {
     JsonObject jsonObject = new JsonObject();
     Object config = properties.get(name);
 
-    if (config instanceof ConfigurationProperties) {
-      config = ((ConfigurationProperties) config).getMap();
+    if (config instanceof ConfigurationProperties cfg) {
+      config = cfg.getMap();
     }
 
-    if (config instanceof Map) {
-      Map<String, Object> map = pack((Map<String, Object>) config);
+    if (config instanceof Map mapCfg) {
+      Map<String, Object> map = pack(mapCfg);
       JsonElement element = SystemProperties.getInstance().getGson().toJsonTree(map);
       jsonObject.add(name, element);
 
@@ -106,16 +105,15 @@ public abstract class PropertyManager {
 
 
   private void pack(Map<String, Object> map, String key, Object obj) {
-    if (obj instanceof ConfigurationProperties) {
-      pack(map, key, ((ConfigurationProperties) obj).getMap());
-    } else if (obj instanceof Map) {
-      map.put(key, pack((Map<String, Object>) obj));
-    } else if (obj instanceof List) {
-      List<Object> list = (List<Object>) obj;
+    if (obj instanceof ConfigurationProperties cfg) {
+      pack(map, key, cfg.getMap());
+    } else if (obj instanceof Map  mapCfg) {
+      map.put(key, pack(mapCfg));
+    } else if (obj instanceof List list) {
       List<Object> translated = new ArrayList<>();
       for (Object tmp : list) {
-        if (tmp instanceof ConfigurationProperties) {
-          translated.add(pack(((ConfigurationProperties) tmp).getMap()));
+        if (tmp instanceof ConfigurationProperties cfg) {
+          translated.add(pack(cfg.getMap()));
         } else {
           translated.add(tmp);
         }
@@ -142,8 +140,8 @@ public abstract class PropertyManager {
 
   public @NonNull @NotNull ConfigurationProperties getProperties(String name) {
     Object obj = properties.get(name);
-    if (obj instanceof ConfigurationProperties) {
-      return (ConfigurationProperties) obj;
+    if (obj instanceof ConfigurationProperties cfg) {
+      return cfg;
     }
     return new ConfigurationProperties();
   }

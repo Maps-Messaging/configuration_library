@@ -24,7 +24,6 @@ import software.amazon.awssdk.services.ssm.model.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class AwsSsmApi {
 
@@ -47,10 +46,10 @@ public class AwsSsmApi {
           .path(buildKey(path))
           .recursive(true)
           .build());
-      List<String> keys = response.parameters().stream().map(Parameter::name).collect(Collectors.toList());
+      List<String> keys = response.parameters().stream().map(Parameter::name).toList();
       return keys.stream()
           .map(this::processKey)
-          .collect(Collectors.toList());
+          .toList();
     } catch (SsmException e) {
       throw new IOException("Error retrieving keys from Parameter Store", e);
     }
