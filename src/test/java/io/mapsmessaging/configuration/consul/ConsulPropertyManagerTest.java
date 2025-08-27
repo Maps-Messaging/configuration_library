@@ -70,7 +70,8 @@ class ConsulPropertyManagerTest {
     startManager();
     ConsulPropertyManager propertyManager = new ConsulPropertyManager("/test/storeTest");
     propertyManager.load();
-    System.err.println(propertyManager.toString());
+    Assertions.assertNotNull(propertyManager.getProperties());
+    Assertions.assertNotNull(propertyManager.scanForDefaultConfig("/depth1/depth2/depth3"));
   }
 
 
