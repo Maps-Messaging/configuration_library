@@ -85,9 +85,9 @@ class ConfigurationPropertiesTest {
 
     ConfigurationProperties properties = new ConfigurationProperties(props);
     int div = totalProcessors/4;
-    if(div<0)div =1;
+    if(div<1)div =1;
     int sub = totalProcessors-5;
-    if(sub<0)sub =1;
+    if(sub<1)sub =1;
 
     assertEquals(1, properties.getThreadCount("selectors", totalProcessors));
     assertEquals(totalProcessors, properties.getThreadCount("selectors2", 1));
