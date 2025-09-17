@@ -95,6 +95,46 @@ public class ConfigurationProperties {
     return null;
   }
 
+  public int getThreadCount(String key, int defaultValue) {
+    String value = getProperty(key, String.valueOf(defaultValue)).trim();
+
+    if (value.toLowerCase().contains("{processors}")) {
+      int threads = Runtime.getRuntime().availableProcessors();
+
+      int plus = value.lastIndexOf('+');
+      int minus = value.lastIndexOf('-');
+      int mult = value.lastIndexOf('*');
+      int div = value.lastIndexOf('/');
+
+      int operatorIndex = Math.max(Math.max(plus, minus), Math.max(mult, div));
+
+      if (operatorIndex > -1 && operatorIndex < value.length() - 1) {
+        char operator = value.charAt(operatorIndex);
+        int operand = Integer.parseInt(value.substring(operatorIndex + 1).trim());
+
+        switch (operator) {
+          case '/': threads = threads / operand; break;
+          case '*': threads = threads * operand; break;
+          case '+': threads = threads + operand; break;
+          case '-': threads = threads - operand; break;
+          default:  break;
+        }
+      }
+
+      if (threads < 1) {
+        threads = 1;
+      }
+      return threads;
+    }
+
+    int dot = value.indexOf('.');
+    if (dot >= 0) {
+      value = value.substring(0, dot).trim();
+    }
+    return Integer.parseInt(value);
+  }
+
+
   public boolean getBooleanProperty(String key, boolean defaultValue) {
     return asBoolean(get(key, defaultValue));
   }
