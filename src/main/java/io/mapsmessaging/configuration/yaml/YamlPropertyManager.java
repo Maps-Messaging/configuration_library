@@ -30,23 +30,23 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+@SuppressWarnings("java:S3740")
 public abstract class YamlPropertyManager extends PropertyManager {
 
   private static final String GLOBAL = "global";
 
-  protected void parseAndLoadYaml(String propertyName, String yamlString) throws IOException {
+  protected void parseAndLoadYaml(String propertyName, String yamlString) {
     Yaml yaml = new Yaml();
     JsonParser parser = new YamlParser(yaml.load(yamlString));
     Map<String, Object> response = parser.parse();
     Object topLevel = response.get(propertyName);
-    if (topLevel instanceof Map) {
-      Map<String, Object> root = (Map<String, Object>) topLevel;
+    if (topLevel instanceof Map map) {
+      Map<String, Object> root = map;
       root.put("loaded", System.currentTimeMillis());
     }
     ConfigurationProperties configurationProperties = new ConfigurationProperties();

@@ -72,6 +72,36 @@ class ConfigurationPropertiesTest {
   }
 
   @Test
+  void getThreadCountProperty() {
+    int totalProcessors = Runtime.getRuntime().availableProcessors();
+
+    HashMap<String, Object> props = new LinkedHashMap<>();
+    props.put("selectors", "1");
+    props.put("selectors2", "{processors}");
+    props.put("selectors3", "{processors}/4");
+    props.put("selectors4", "{processors}*5");
+    props.put("selectors5", "{processors}+4");
+    props.put("selectors6", "{processors}-5");
+
+    ConfigurationProperties properties = new ConfigurationProperties(props);
+    int div = totalProcessors/4;
+    if(div<1)div =1;
+    int sub = totalProcessors-5;
+    if(sub<1)sub =1;
+
+    assertEquals(1, properties.getThreadCount("selectors", totalProcessors));
+    assertEquals(totalProcessors, properties.getThreadCount("selectors2", 1));
+    assertEquals(div, properties.getThreadCount("selectors3", totalProcessors));
+    assertEquals(totalProcessors*5, properties.getThreadCount("selectors4", totalProcessors));
+
+    assertEquals(totalProcessors+4, properties.getThreadCount("selectors5", totalProcessors));
+    assertEquals(sub, properties.getThreadCount("selectors6", totalProcessors));
+
+
+  }
+
+
+  @Test
   void getBooleanProperty() {
     ConfigurationProperties props = new ConfigurationProperties();
     props.put("trueStringValue", "true");
