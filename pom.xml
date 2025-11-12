@@ -108,14 +108,14 @@
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>simple_logging</artifactId>
-                    <version>2.1.0</version>
+                    <version>2.1.1</version>
                 </dependency>
 
                 <!-- Non Blocking Task Queue module -->
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>non_block_task_scheduler</artifactId>
-                    <version>2.2.0</version>
+                    <version>2.2.1</version>
                 </dependency>
 
             </dependencies>
@@ -163,13 +163,13 @@
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>simple_logging</artifactId>
-                    <version>2.1.1-SNAPSHOT</version>
+                    <version>2.1.2-SNAPSHOT</version>
                 </dependency>
                 <!-- Non Blocking Task Queue module -->
                 <dependency>
                     <groupId>io.mapsmessaging</groupId>
                     <artifactId>non_block_task_scheduler</artifactId>
-                    <version>2.2.1-SNAPSHOT</version>
+                    <version>2.2.2-SNAPSHOT</version>
                 </dependency>
             </dependencies>
         </profile>
