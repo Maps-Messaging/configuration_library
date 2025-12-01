@@ -83,8 +83,9 @@ public class PersistentObject {
     if (text == null) {
       writeInt(outputStream, -1);
     } else {
-      writeInt(outputStream, text.length());
-      outputStream.write(text.getBytes());
+      byte[] buffer = text.getBytes();
+      writeInt(outputStream, buffer.length);
+      outputStream.write(buffer);
     }
   }
 
@@ -146,7 +147,7 @@ public class PersistentObject {
     byte[] tmp = new byte[len];
     int read = 0;
     while (read < len) {
-      int t = inputStream.read(tmp);
+      int t = inputStream.read(tmp, read, len - read);
       if (t < 0) throw new IOException("EOF reached");
       read += t;
     }
