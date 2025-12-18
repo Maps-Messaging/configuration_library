@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import static io.mapsmessaging.logging.ConfigLogMessages.PROPERTY_SMART_QUOTES_DETECTED;
 import static io.mapsmessaging.logging.LogMessages.PROPERTY_MANAGER_ENTRY_LOOKUP;
 import static io.mapsmessaging.logging.LogMessages.PROPERTY_MANAGER_ENTRY_LOOKUP_FAILED;
 
@@ -181,6 +182,11 @@ public class ConfigurationProperties {
     }
 
     if (val != null) {
+      if(val instanceof String string && string.startsWith("“") && string.endsWith("”")) {
+        String fix = string.substring(1, string.length() - 1);
+        logger.log(PROPERTY_SMART_QUOTES_DETECTED, key, string, fix);
+        val = fix;
+      }
       return val;
     }
     logger.log(PROPERTY_MANAGER_ENTRY_LOOKUP_FAILED, key, defaultValue);

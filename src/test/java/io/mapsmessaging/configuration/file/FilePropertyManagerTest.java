@@ -19,14 +19,45 @@
 
 package io.mapsmessaging.configuration.file;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.configuration.PropertyManager;
 import io.mapsmessaging.configuration.PropertyManagerTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 
 class FilePropertyManagerTest extends PropertyManagerTest {
+
+  private static LogListener logListener;
+
+  @BeforeAll
+  static void setUp() {
+    logListener = new LogListener();
+    logListener.register();
+  }
 
   @Override
   protected PropertyManager create() {
     return new FileYamlPropertyManager();
+  }
+
+
+  @Test
+  void smartQuotes() {
+    PropertyManager manager = create();
+    manager.load();
+    ConfigurationProperties prop = manager.getProperties("test2");
+    ConfigurationProperties data = (ConfigurationProperties) prop.get("data");
+    data.getProperty("badValue");
+    boolean found = false;
+    for(String message: logListener.getLogMessages()) {
+      if(message.contains("Detected smart quotes for key")){
+        found = true;
+        break;
+      }
+    }
+    Assertions.assertTrue(found, "Log message should have been raised");
   }
 
 }

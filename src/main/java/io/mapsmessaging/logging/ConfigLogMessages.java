@@ -41,6 +41,8 @@ public enum ConfigLogMessages implements LogMessage {
   PROPERTY_MANAGER_LOAD_FAILED(LEVEL.WARN, CONFIG_CATEGORY.CONFIGURATION, "Failed to load property {}"),
   PROPERTY_MANAGER_ENTRY_LOOKUP(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Lookup for {} found {} in {}"),
   PROPERTY_MANAGER_ENTRY_LOOKUP_FAILED(LEVEL.DEBUG, CONFIG_CATEGORY.CONFIGURATION, "Lookup for {} not found, returning default {}"),
+  PROPERTY_SMART_QUOTES_DETECTED(LEVEL.FATAL, CONFIG_CATEGORY.CONFIGURATION, "Detected smart quotes for key {}, please use normal quotes for for strings, converted {} to {}"),
+
   //</editor-fold>
 
   //<editor-fold desc="CONSUL agent logging">
