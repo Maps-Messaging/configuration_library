@@ -41,7 +41,11 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
     try {
       Collection<String> knownProperties = ResourceList.getResources(Pattern.compile(".*yaml"));
       for (String propertyName : knownProperties) {
-        loadProperty(propertyName);
+        try {
+          loadProperty(propertyName);
+        } catch (RuntimeException e) { // ignore during load
+          logger.log(PROPERTY_MANAGER_SCAN_FAILED, e);
+        }
       }
     } catch (IOException e) {
       logger.log(PROPERTY_MANAGER_SCAN_FAILED, e);
