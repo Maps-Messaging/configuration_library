@@ -25,6 +25,7 @@ import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +42,11 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
     try {
       Collection<String> knownProperties = ResourceList.getResources(Pattern.compile(".*yaml"));
       for (String propertyName : knownProperties) {
-        loadProperty(propertyName);
+        try {
+          loadProperty(propertyName);
+        } catch (RuntimeException e) { // ignore during load
+          logger.log(PROPERTY_MANAGER_SCAN_FAILED, e);
+        }
       }
     } catch (IOException e) {
       logger.log(PROPERTY_MANAGER_SCAN_FAILED, e);
@@ -84,7 +89,7 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
         }
       }
       is.close();
-      parseAndLoadYaml(propertyName, byteArrayOutputStream.toString());
+      parseAndLoadYaml(propertyName, byteArrayOutputStream.toString(StandardCharsets.UTF_8));
     } else {
       throw new FileNotFoundException("No such resource found " + propResourceName);
     }

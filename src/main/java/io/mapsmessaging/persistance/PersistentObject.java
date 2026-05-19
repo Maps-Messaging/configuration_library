@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class PersistentObject {
 
@@ -83,7 +84,7 @@ public class PersistentObject {
     if (text == null) {
       writeInt(outputStream, -1);
     } else {
-      byte[] buffer = text.getBytes();
+      byte[] buffer = text.getBytes(StandardCharsets.UTF_8);
       writeInt(outputStream, buffer.length);
       outputStream.write(buffer);
     }
@@ -99,7 +100,7 @@ public class PersistentObject {
   protected String readString(InputStream inputStream) throws IOException {
     int len = readInt(inputStream);
     if (len >= 0) {
-      return new String(readFullBuffer(inputStream, len));
+      return new String(readFullBuffer(inputStream, len), StandardCharsets.UTF_8);
     }
     return "";
   }
