@@ -23,6 +23,7 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.configuration.PropertyManager;
 import io.mapsmessaging.configuration.parsers.JsonParser;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.ByteArrayOutputStream;

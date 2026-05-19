@@ -25,6 +25,7 @@ import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -88,7 +89,7 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
         }
       }
       is.close();
-      parseAndLoadYaml(propertyName, byteArrayOutputStream.toString());
+      parseAndLoadYaml(propertyName, byteArrayOutputStream.toString(StandardCharsets.UTF_8));
     } else {
       throw new FileNotFoundException("No such resource found " + propResourceName);
     }
