@@ -118,7 +118,14 @@ public class EcwidConsulManager extends ConsulServerApi {
       return;
     }
     NewService.Check serviceCheck = new NewService.Check();
+    // A Consul check must specify a target. A bare interval with no TCP/HTTP/TTL
+    // target is rejected by the agent ("Invalid check: TTL must be > 0"), which made
+    // agentServiceRegister fail and left the mapsMessaging service absent from the
+    // catalog. Use a TCP check against the service port so registration succeeds and
+    // the service is health-checked.
+    serviceCheck.setTcp("localhost:" + Constants.CONSUL_PORT);
     serviceCheck.setInterval("10s");
+    serviceCheck.setDeregisterCriticalServiceAfter("1m");
 
     List<String> propertyNames = new ArrayList<>();
     logger.log(CONSUL_REGISTER);
