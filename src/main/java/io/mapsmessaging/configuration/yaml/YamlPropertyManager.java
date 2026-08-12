@@ -51,6 +51,9 @@ public abstract class YamlPropertyManager extends PropertyManager {
     Yaml yaml = new Yaml();
     JsonParser parser = new YamlParser(yaml.load(yamlString));
     Map<String, Object> response = parser.parse();
+    if (response.isEmpty()) {
+      throw new IllegalArgumentException("Configuration must contain a root mapping");
+    }
     Object topLevel = response.get(propertyName);
     if (topLevel instanceof Map map) {
       Map<String, Object> root = map;
@@ -58,6 +61,9 @@ public abstract class YamlPropertyManager extends PropertyManager {
     }
     ConfigurationProperties configurationProperties = new ConfigurationProperties();
     for (Entry<String, Object> item : response.entrySet()) {
+      if (!(item.getValue() instanceof Map)) {
+        throw new IllegalArgumentException("Configuration root '" + item.getKey() + "' must contain a mapping");
+      }
       Map<String, Object> entry = (Map<String, Object>) item.getValue();
       if (entry.get(GLOBAL) != null) {
         Map<String, Object> global = (Map<String, Object>) entry.remove(GLOBAL);

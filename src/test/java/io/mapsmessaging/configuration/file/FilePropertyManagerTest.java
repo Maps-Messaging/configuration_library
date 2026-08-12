@@ -127,11 +127,44 @@ class FilePropertyManagerTest extends PropertyManagerTest {
     assertFalse(manager.contains("ignored"));
   }
 
-  private FileYamlPropertyManager loadFrom(Path directory) {
+  @Test
+  void skipsNonMappingYamlAndContinuesLoading() throws IOException {
+    Path invalidDirectory = Files.createDirectory(tempDirectory.resolve("invalid"));
+    Path validDirectory = Files.createDirectory(tempDirectory.resolve("valid"));
+    Files.writeString(invalidDirectory.resolve("list.yaml"), "list:\n  - one\n  - two\n", StandardCharsets.UTF_8);
+    Files.writeString(invalidDirectory.resolve("root-list.yaml"), "- one\n- two\n", StandardCharsets.UTF_8);
+    Files.writeString(validDirectory.resolve("loaded.yaml"), "loaded:\n  value: expected\n", StandardCharsets.UTF_8);
+
+    FileYamlPropertyManager manager = loadFrom(invalidDirectory, validDirectory);
+
+    assertFalse(manager.contains("list"));
+    assertFalse(manager.contains("root-list"));
+    assertEquals("expected", manager.getProperties("loaded").getProperty("value"));
+  }
+
+  @Test
+  void firstClasspathDefinitionWins() throws IOException {
+    Path firstDirectory = Files.createDirectory(tempDirectory.resolve("first"));
+    Path secondDirectory = Files.createDirectory(tempDirectory.resolve("second"));
+    Files.writeString(firstDirectory.resolve("duplicate.yaml"), "duplicate:\n  value: test\n", StandardCharsets.UTF_8);
+    Files.writeString(secondDirectory.resolve("duplicate.yaml"), "duplicate:\n  value: production\n", StandardCharsets.UTF_8);
+
+    FileYamlPropertyManager manager = loadFrom(firstDirectory, secondDirectory);
+
+    assertEquals("test", manager.getProperties("duplicate").getProperty("value"));
+    assertEquals(
+        firstDirectory.resolve("duplicate.yaml").toRealPath().toString(),
+        manager.getProperties("duplicate").getSourcePath());
+  }
+
+  private FileYamlPropertyManager loadFrom(Path... directories) {
     String originalClassPath = System.getProperty("java.class.path");
     FileYamlPropertyManager manager = new FileYamlPropertyManager();
     try {
-      System.setProperty("java.class.path", directory.toString());
+      String classPath = String.join(
+          System.getProperty("path.separator"),
+          java.util.Arrays.stream(directories).map(Path::toString).toList());
+      System.setProperty("java.class.path", classPath);
       manager.load();
     } finally {
       System.setProperty("java.class.path", originalClassPath);

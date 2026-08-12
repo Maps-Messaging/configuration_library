@@ -68,6 +68,9 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
       int separator = Math.max(propertyName.lastIndexOf('/'), propertyName.lastIndexOf('\\'));
       propertyName = propertyName.substring(separator + 1);
       propertyName = propertyName.substring(0, propertyName.indexOf(".yaml"));
+      if (properties.containsKey(propertyName)) {
+        return;
+      }
       Path sourcePath = Path.of(resourceName);
       if (Files.isRegularFile(sourcePath)) {
         loadFile(propertyName, sourcePath);
@@ -75,7 +78,7 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
         loadResource(propertyName);
       }
       logger.log(PROPERTY_MANAGER_FOUND, propertyName);
-    } catch (IOException e) {
+    } catch (IOException | RuntimeException e) {
       logger.log(PROPERTY_MANAGER_LOAD_FAILED, e, propertyName);
     }
   }
