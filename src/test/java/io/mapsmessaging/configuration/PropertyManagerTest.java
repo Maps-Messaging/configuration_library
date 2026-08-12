@@ -21,17 +21,22 @@ package io.mapsmessaging.configuration;
 
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class PropertyManagerTest {
+
+  @TempDir
+  protected Path tempDirectory;
 
   protected abstract PropertyManager create();
 
@@ -49,31 +54,27 @@ public abstract class PropertyManagerTest {
     assertTrue(manager.properties.isEmpty());
     manager.load();
     assertFalse(manager.properties.isEmpty());
-    File outFile = new File("./configTestFile");
-    if(outFile.exists()){
-      outFile.delete();
-    }
-    manager.storeAll(outFile.getAbsolutePath());
-    assertTrue(outFile.exists());
-    assertTrue(outFile.delete());
+    Path outFile = tempDirectory.resolve("configTestFile");
+    manager.storeAll(outFile.toString());
+    assertTrue(Files.exists(outFile));
   }
 
   @Test
   void store() throws IOException {
     PropertyManager manager = create();
-    assertTrue(manager.properties.isEmpty());
-    manager.load();
-    assertFalse(manager.properties.isEmpty());
-    File outFile = new File("./test1.yaml");
-    if(outFile.exists()){
-      outFile.delete();
-    }
-    ConfigurationProperties prop = manager.getProperties("test1");
-    prop.put("Updatedkey", "updated value");
-    manager.update(".", "test1", prop);
-    manager.storeAll(outFile.getAbsolutePath());
-    assertTrue(outFile.exists());
-    assertTrue(outFile.delete());
+    ConfigurationProperties existing = new ConfigurationProperties();
+    manager.properties.put("generated", existing);
+
+    ConfigurationProperties updated = new ConfigurationProperties();
+    updated.put("Updatedkey", "updated value");
+    ConfigurationProperties document = new ConfigurationProperties();
+    document.put("generated", updated);
+
+    manager.update(tempDirectory.toString(), "generated", document);
+
+    Path outFile = tempDirectory.resolve("generated.yaml");
+    assertTrue(Files.exists(outFile));
+    assertTrue(Files.readString(outFile).contains("Updatedkey: updated value"));
   }
 
 

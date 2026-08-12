@@ -27,9 +27,11 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -42,6 +44,10 @@ public abstract class YamlPropertyManager extends PropertyManager {
   private static final String GLOBAL = "global";
 
   protected void parseAndLoadYaml(String propertyName, String yamlString) {
+    parseAndLoadYaml(propertyName, yamlString, null);
+  }
+
+  protected void parseAndLoadYaml(String propertyName, String yamlString, String sourcePath) {
     Yaml yaml = new Yaml();
     JsonParser parser = new YamlParser(yaml.load(yamlString));
     Map<String, Object> response = parser.parse();
@@ -60,6 +66,7 @@ public abstract class YamlPropertyManager extends PropertyManager {
       configurationProperties.putAll(entry);
     }
     configurationProperties.setSource(yamlString);
+    configurationProperties.setSourcePath(sourcePath);
     properties.put(propertyName, configurationProperties);
   }
 
@@ -89,10 +96,16 @@ public abstract class YamlPropertyManager extends PropertyManager {
     options.setIndent(3); // Custom indentation level for better formatting
 
 
-    try (PrintWriter writer = new PrintWriter(path+ File.separator+key+".yaml")) {
+    Path target = configurationProperties.getSourcePath() == null || configurationProperties.getSourcePath().isBlank()
+        ? Path.of(path, key + ".yaml")
+        : Path.of(configurationProperties.getSourcePath());
+    try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(target, StandardCharsets.UTF_8))) {
       addHeader(writer);
       Yaml yaml = new Yaml(options);
       yaml.dump(data, writer);
+      if (writer.checkError()) {
+        throw new IOException("Failed to write configuration: " + target);
+      }
     }
 
   }

@@ -43,6 +43,8 @@ class ConfigurationPropertiesTest {
     properties.put("stringList", stringList);
     properties.setSource(properties.toString());
     Assertions.assertEquals(properties.toString(), properties.getSource());
+    properties.setSourcePath("/tmp/test.yaml");
+    Assertions.assertEquals("/tmp/test.yaml", properties.getSourcePath());
 
     Assertions.assertFalse(properties.isEmpty());
     Assertions.assertNotNull(properties.getProperty("stringList"));
