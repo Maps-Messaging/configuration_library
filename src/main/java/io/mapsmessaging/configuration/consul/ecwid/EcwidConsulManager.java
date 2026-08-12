@@ -36,8 +36,11 @@ import org.apache.http.message.BasicHeader;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -117,26 +120,51 @@ public class EcwidConsulManager extends ConsulServerApi {
     if (!consulConfiguration.registerAgent()) {
       return;
     }
+    NewService newService = createService(uniqueName, meta);
+    logger.log(CONSUL_REGISTER);
+    client.agentServiceRegister(newService);
+    registerPingTask();
+  }
+
+  static NewService createService(String uniqueName, Map<String, String> meta) {
+    String restEndpoint = meta == null ? null : meta.get(Constants.REST_API);
+    if (restEndpoint == null || restEndpoint.isBlank()) {
+      throw new IllegalArgumentException("REST API endpoint is required for Consul registration");
+    }
+
+    URI endpoint;
+    try {
+      endpoint = new URI("tcp://" + restEndpoint);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("Invalid REST API endpoint: " + restEndpoint, e);
+    }
+
+    String host = endpoint.getHost();
+    int port = endpoint.getPort();
+    if (host != null && host.startsWith("[") && host.endsWith("]")) {
+      host = host.substring(1, host.length() - 1);
+    }
+    if (host == null || host.isBlank() || port < 1 || port > 65535) {
+      throw new IllegalArgumentException("Invalid REST API endpoint: " + restEndpoint);
+    }
+    if (host.equals("0.0.0.0") || host.equals("::") || host.equals("0:0:0:0:0:0:0:0")) {
+      throw new IllegalArgumentException("REST API endpoint must not use a wildcard address: " + restEndpoint);
+    }
+
+    String tcpEndpoint = host.contains(":") ? "[" + host + "]:" + port : host + ":" + port;
     NewService.Check serviceCheck = new NewService.Check();
-    // A Consul check must specify a target. A bare interval with no TCP/HTTP/TTL
-    // target is rejected by the agent ("Invalid check: TTL must be > 0"), which made
-    // agentServiceRegister fail and left the mapsMessaging service absent from the
-    // catalog. Use a TCP check against the service port so registration succeeds and
-    // the service is health-checked.
-    serviceCheck.setTcp("localhost:" + Constants.CONSUL_PORT);
+    serviceCheck.setTcp(tcpEndpoint);
     serviceCheck.setInterval("10s");
     serviceCheck.setDeregisterCriticalServiceAfter("1m");
 
-    List<String> propertyNames = new ArrayList<>();
-    logger.log(CONSUL_REGISTER);
     NewService newService = new NewService();
     newService.setId(uniqueName);
     newService.setName(Constants.NAME);
-    newService.setTags(propertyNames);
-    newService.setPort(Constants.CONSUL_PORT);
+    newService.setAddress(host);
+    newService.setPort(port);
+    newService.setMeta(new LinkedHashMap<>(meta));
     newService.setCheck(serviceCheck);
-    client.agentServiceRegister(newService);
-    registerPingTask();
+    return newService;
   }
 
   private void recreateClient() throws IOException {
