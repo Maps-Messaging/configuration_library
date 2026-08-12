@@ -1,6 +1,6 @@
 /*
  *  Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -19,16 +19,25 @@
 
 package io.mapsmessaging.configuration.consul;
 
-public class Constants {
+import org.junit.jupiter.api.Test;
 
-  public static final long PING_TIME = 60;
-  public static final long HEALTH_TIME = 40;
-  public static final int CONSUL_PORT = 8080;
-  public static final String NAME = "mapsMessaging";
-  public static final String REST_API = "rest";
-  public static final int RETRY_COUNT = 20;
+import java.io.IOException;
+import java.net.InetAddress;
 
-  private Constants() {
-    // hide the constructor
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class ConsulServerApiTest {
+
+  @Test
+  void resolveLocalAddress_usesRouteToConsulHost() throws IOException {
+    InetAddress address = ConsulServerApi.resolveLocalAddress("http://127.0.0.1:8500");
+
+    assertEquals("127.0.0.1", address.getHostAddress());
+  }
+
+  @Test
+  void resolveLocalAddress_rejectsUrlWithoutHost() {
+    assertThrows(IOException.class, () -> ConsulServerApi.resolveLocalAddress("not-a-consul-url"));
   }
 }

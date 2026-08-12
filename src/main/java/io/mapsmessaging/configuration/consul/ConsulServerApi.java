@@ -23,6 +23,9 @@ import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.utilities.threads.SimpleTaskScheduler;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +98,35 @@ public abstract class ConsulServerApi implements Runnable {
 
   public String getUrlPath() {
     return consulConfiguration.getUrlPath();
+  }
+
+  public InetAddress getLocalAddress() throws IOException {
+    return resolveLocalAddress(consulConfiguration.getConsulUrl());
+  }
+
+  static InetAddress resolveLocalAddress(String consulUrl) throws IOException {
+    URI consulUri;
+    try {
+      consulUri = URI.create(consulUrl);
+    } catch (IllegalArgumentException e) {
+      throw new IOException("Invalid Consul URL: " + consulUrl, e);
+    }
+    String consulHost = consulUri.getHost();
+    if (consulHost == null || consulHost.isBlank()) {
+      throw new IOException("Consul URL does not contain a host: " + consulUrl);
+    }
+    int consulPort = consulUri.getPort();
+    if (consulPort < 0) {
+      consulPort = "https".equalsIgnoreCase(consulUri.getScheme()) ? 443 : 8500;
+    }
+    try (DatagramSocket socket = new DatagramSocket()) {
+      socket.connect(InetAddress.getByName(consulHost), consulPort);
+      InetAddress localAddress = socket.getLocalAddress();
+      if (localAddress.isAnyLocalAddress()) {
+        throw new IOException("Unable to determine the local address used to reach Consul: " + consulUrl);
+      }
+      return localAddress;
+    }
   }
 
   public abstract List<String> getKeys(String key) throws IOException;
