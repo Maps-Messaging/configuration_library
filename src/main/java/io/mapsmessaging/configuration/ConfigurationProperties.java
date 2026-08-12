@@ -43,6 +43,9 @@ public class ConfigurationProperties {
   @Getter
   @Setter
   private String source;
+  @Getter
+  @Setter
+  private String sourcePath;
   @Setter
   private ConfigurationProperties global;
 

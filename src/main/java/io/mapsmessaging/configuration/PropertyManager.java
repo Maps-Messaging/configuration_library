@@ -50,9 +50,20 @@ public abstract class PropertyManager {
 
   public abstract void copy(PropertyManager propertyManager) throws IOException;
 
-  public void update(String path, String name, ConfigurationProperties newProps) throws IOException{
+  public void update(String path, String name, ConfigurationProperties newProps) throws IOException {
+    Object current = properties.get(name);
+    if (!(current instanceof ConfigurationProperties currentProps)) {
+      throw new IllegalArgumentException("Unknown configuration: " + name);
+    }
+
+    newProps.setSourcePath(currentProps.getSourcePath());
     properties.replace(name, newProps);
-    store(path, name);
+    try {
+      store(path, name);
+    } catch (IOException | RuntimeException e) {
+      properties.replace(name, currentProps);
+      throw e;
+    }
   }
 
   protected abstract List<String> getKeys(String lookup);

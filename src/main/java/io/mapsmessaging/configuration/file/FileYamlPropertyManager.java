@@ -26,6 +26,8 @@ import io.mapsmessaging.logging.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +42,7 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
   @Override
   public void load() {
     try {
-      Collection<String> knownProperties = ResourceList.getResources(Pattern.compile(".*yaml"));
+      Collection<String> knownProperties = ResourceList.getResources(Pattern.compile(".*\\.yaml$"));
       for (String propertyName : knownProperties) {
         try {
           loadProperty(propertyName);
@@ -60,37 +62,40 @@ public class FileYamlPropertyManager extends YamlPropertyManager {
     return new ArrayList<>();
   }
 
-  private void loadProperty(String propertyName) {
+  private void loadProperty(String resourceName) {
+    String propertyName = resourceName;
     try {
-      propertyName = propertyName.substring(propertyName.lastIndexOf(File.separatorChar) + 1);
+      int separator = Math.max(propertyName.lastIndexOf('/'), propertyName.lastIndexOf('\\'));
+      propertyName = propertyName.substring(separator + 1);
       propertyName = propertyName.substring(0, propertyName.indexOf(".yaml"));
-      loadFile(propertyName);
+      Path sourcePath = Path.of(resourceName);
+      if (Files.isRegularFile(sourcePath)) {
+        loadFile(propertyName, sourcePath);
+      } else {
+        loadResource(propertyName);
+      }
       logger.log(PROPERTY_MANAGER_FOUND, propertyName);
     } catch (IOException e) {
       logger.log(PROPERTY_MANAGER_LOAD_FAILED, e, propertyName);
     }
   }
 
-  private void loadFile(String propertyName) throws IOException {
+  private void loadFile(String propertyName, Path sourcePath) throws IOException {
+    Path canonicalPath = sourcePath.toRealPath();
+    parseAndLoadYaml(propertyName, Files.readString(canonicalPath, StandardCharsets.UTF_8), canonicalPath.toString());
+  }
+
+  private void loadResource(String propertyName) throws IOException {
     String propResourceName = "/" + propertyName;
     while (propResourceName.contains(".")) {
       propResourceName = propResourceName.replace('.', File.separatorChar);
     }
     propResourceName = propResourceName + ".yaml";
-    InputStream is = getClass().getResourceAsStream(propResourceName);
-    if (is != null) {
-      int read = 1;
-      byte[] buffer = new byte[1024];
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      while (read > 0) {
-        read = is.read(buffer);
-        if (read > 0) {
-          byteArrayOutputStream.write(buffer, 0, read);
-        }
+    try (InputStream inputStream = getClass().getResourceAsStream(propResourceName)) {
+      if (inputStream != null) {
+        parseAndLoadYaml(propertyName, new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+        return;
       }
-      is.close();
-      parseAndLoadYaml(propertyName, byteArrayOutputStream.toString(StandardCharsets.UTF_8));
-    } else {
       throw new FileNotFoundException("No such resource found " + propResourceName);
     }
   }
