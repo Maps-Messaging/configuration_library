@@ -24,6 +24,7 @@ import io.mapsmessaging.configuration.consul.Constants;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -74,5 +75,68 @@ class EcwidConsulManagerTest {
   void createService_rejectsWildcardRestEndpoint() {
     assertThrows(IllegalArgumentException.class, () -> EcwidConsulManager.createService("server-1", Map.of(Constants.REST_API, "0.0.0.0:8080")));
     assertThrows(IllegalArgumentException.class, () -> EcwidConsulManager.createService("server-1", Map.of(Constants.REST_API, "[::]:8080")));
+  }
+
+  @Test
+  void createService_advertiseAddressOverridesRegistrationAndCheck() {
+    Map<String, String> meta = Map.of(Constants.REST_API, "172.26.64.18:8080");
+
+    NewService service = EcwidConsulManager.createService("server-1", meta, "100.87.176.28");
+
+    assertEquals("100.87.176.28", service.getAddress());
+    assertEquals(8080, service.getPort());
+    assertEquals("100.87.176.28:8080", service.getCheck().getTcp());
+  }
+
+  @Test
+  void createListenerServices_registersOneServicePerEndpointEntry() {
+    Map<String, String> meta = new LinkedHashMap<>();
+    meta.put(Constants.REST_API, "172.26.64.18:8080");
+    meta.put("mqtt", "tcp://0.0.0.0:1883/");
+    meta.put("stomp", "tcp://0.0.0.0:8674/");
+    meta.put("version", "4.5.0"); // plain metadata: not an endpoint, not a service
+
+    List<NewService> services = EcwidConsulManager.createListenerServices("server-1", meta, null);
+
+    assertEquals(2, services.size());
+    NewService mqtt = services.get(0);
+    assertEquals("server-1-mqtt", mqtt.getId());
+    assertEquals(Constants.LISTENER_SERVICE_PREFIX + "mqtt", mqtt.getName());
+    assertEquals("172.26.64.18", mqtt.getAddress());
+    assertEquals(1883, mqtt.getPort());
+    assertEquals("172.26.64.18:1883", mqtt.getCheck().getTcp());
+  }
+
+  @Test
+  void createListenerServices_advertiseAddressAppliesToListeners() {
+    Map<String, String> meta = new LinkedHashMap<>();
+    meta.put(Constants.REST_API, "172.26.64.18:8080");
+    meta.put("mqtt", "tcp://0.0.0.0:1883/");
+
+    List<NewService> services = EcwidConsulManager.createListenerServices("server-1", meta, "100.87.176.28");
+
+    assertEquals("100.87.176.28", services.get(0).getAddress());
+    assertEquals("100.87.176.28:1883", services.get(0).getCheck().getTcp());
+  }
+
+  @Test
+  void createListenerServices_udpListenerChecksRestEndpointForLiveness() {
+    Map<String, String> meta = new LinkedHashMap<>();
+    meta.put(Constants.REST_API, "172.26.64.18:8080");
+    meta.put("mavlink", "udp://0.0.0.0:14450/");
+
+    List<NewService> services = EcwidConsulManager.createListenerServices("server-1", meta, null);
+
+    assertEquals(1, services.size());
+    assertEquals(14450, services.get(0).getPort());
+    // UDP cannot be TCP-probed; the REST endpoint stands in as process liveness
+    assertEquals("172.26.64.18:8080", services.get(0).getCheck().getTcp());
+  }
+
+  @Test
+  void createListenerServices_noRestEndpointRegistersNothing() {
+    Map<String, String> meta = Map.of("mqtt", "tcp://0.0.0.0:1883/");
+    assertEquals(0, EcwidConsulManager.createListenerServices("server-1", meta, null).size());
+    assertEquals(0, EcwidConsulManager.createListenerServices("server-1", null, null).size());
   }
 }

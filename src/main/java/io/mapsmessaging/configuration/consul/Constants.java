@@ -26,6 +26,8 @@ public class Constants {
   public static final int CONSUL_PORT = 8080;
   public static final String NAME = "mapsMessaging";
   public static final String REST_API = "rest";
+  // Per-listener services register as <prefix><metaKey> (mqtt -> maps-mqtt)
+  public static final String LISTENER_SERVICE_PREFIX = "maps-";
   public static final int RETRY_COUNT = 20;
 
   private Constants() {
