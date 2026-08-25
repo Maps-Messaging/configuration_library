@@ -64,6 +64,15 @@ public class ConsulConfiguration {
     return SystemProperties.getInstance().getProperty("ConsulPath", urlPath);
   }
 
+  // Address to REGISTER (and health-check) services with, when the address
+  // this process auto-detects is not the one its consumers can route to --
+  // the normal situation inside bridge-networked containers or overlay-only
+  // fleets (WireGuard/Tailscale). Unset = keep the auto-detected behaviour.
+  public String getServiceAddress() {
+    String addr = SystemProperties.getInstance().getProperty("ConsulServiceAddress");
+    return (addr != null && !addr.trim().isEmpty()) ? addr.trim() : null;
+  }
+
   public boolean registerAgent() {
     return SystemProperties.getInstance().getBooleanProperty("ConsulAgentRegister", false);
   }
