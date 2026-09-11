@@ -13,8 +13,8 @@ steps:
       - test-collector#v1.0.0:
           files: "target/surefire-reports/*.xml"
           format: "junit"
-    env:
-      BUILDKITE_ANALYTICS_TOKEN: "$(buildkite-agent secret get ConfigurationLibraryBuildkiteToken)"
+    secrets:
+      BUILDKITE_ANALYTICS_TOKEN: "ConfigurationLibraryBuildkiteToken"
 
     agents:
       queue: "java_build_queue_aws"
