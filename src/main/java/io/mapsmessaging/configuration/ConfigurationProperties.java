@@ -352,28 +352,29 @@ public class ConfigurationProperties {
 
   @SuppressWarnings("java:S3740")
   public void put(String key, Object val) {
-    if (val instanceof Map map1) {
-      ConfigurationProperties props = new ConfigurationProperties(map1);
-      props.setGlobal(global);
-      map.put(key, props);
-    } else if (val instanceof List list1) {
-      List<Object> parsedList = new ArrayList<>();
-      for (Object list : list1) {
-        if (list instanceof Map map2) {
-          ConfigurationProperties props = new ConfigurationProperties(map2);
-          props.setGlobal(global);
-          parsedList.add(props);
-        }
-        else{
-          if(list instanceof ConfigurationProperties) {
-            parsedList.add(list);
-          }
-        }
-      }
-      map.put(key, parsedList);
-    } else {
-      map.put(key, val);
+    map.put(key, convertValue(val));
+  }
+
+  private Object convertValue(Object value) {
+    if (value instanceof Map mapValue) {
+      ConfigurationProperties properties = new ConfigurationProperties(mapValue);
+      properties.setGlobal(global);
+      return properties;
     }
+    if (value instanceof List listValue) {
+      return convertList(listValue);
+    }
+    return value;
+  }
+
+  private List<Object> convertList(List<?> values) {
+    List<Object> parsedList = new ArrayList<>();
+    for (Object value : values) {
+      if (value instanceof Map || value instanceof ConfigurationProperties) {
+        parsedList.add(convertValue(value));
+      }
+    }
+    return parsedList;
   }
 
   public void putAll(Map<String, Object> copy) {
