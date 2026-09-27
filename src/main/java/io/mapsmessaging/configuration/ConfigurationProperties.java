@@ -103,32 +103,7 @@ public class ConfigurationProperties {
     String value = getProperty(key, String.valueOf(defaultValue)).trim();
 
     if (value.toLowerCase().contains("{processors}")) {
-      int threads = Runtime.getRuntime().availableProcessors();
-
-      int plus = value.lastIndexOf('+');
-      int minus = value.lastIndexOf('-');
-      int mult = value.lastIndexOf('*');
-      int div = value.lastIndexOf('/');
-
-      int operatorIndex = Math.max(Math.max(plus, minus), Math.max(mult, div));
-
-      if (operatorIndex > -1 && operatorIndex < value.length() - 1) {
-        char operator = value.charAt(operatorIndex);
-        int operand = Integer.parseInt(value.substring(operatorIndex + 1).trim());
-
-        switch (operator) {
-          case '/': threads = threads / operand; break;
-          case '*': threads = threads * operand; break;
-          case '+': threads = threads + operand; break;
-          case '-': threads = threads - operand; break;
-          default:  break;
-        }
-      }
-
-      if (threads < 1) {
-        threads = 1;
-      }
-      return threads;
+      return resolveProcessorCount(value);
     }
 
     int dot = value.indexOf('.');
@@ -136,6 +111,36 @@ public class ConfigurationProperties {
       value = value.substring(0, dot).trim();
     }
     return Integer.parseInt(value);
+  }
+
+  private int resolveProcessorCount(String value) {
+    int threads = Runtime.getRuntime().availableProcessors();
+    int operatorIndex = findProcessorOperator(value);
+
+    if (operatorIndex >= 0 && operatorIndex < value.length() - 1) {
+      int operand = Integer.parseInt(value.substring(operatorIndex + 1).trim());
+      threads = applyProcessorOperator(threads, value.charAt(operatorIndex), operand);
+    }
+
+    return Math.max(1, threads);
+  }
+
+  private int findProcessorOperator(String value) {
+    int plus = value.lastIndexOf('+');
+    int minus = value.lastIndexOf('-');
+    int mult = value.lastIndexOf('*');
+    int div = value.lastIndexOf('/');
+    return Math.max(Math.max(plus, minus), Math.max(mult, div));
+  }
+
+  private int applyProcessorOperator(int threads, char operator, int operand) {
+    return switch (operator) {
+      case '/' -> threads / operand;
+      case '*' -> threads * operand;
+      case '+' -> threads + operand;
+      case '-' -> threads - operand;
+      default -> threads;
+    };
   }
 
 
