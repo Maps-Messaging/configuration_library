@@ -103,32 +103,7 @@ public class ConfigurationProperties {
     String value = getProperty(key, String.valueOf(defaultValue)).trim();
 
     if (value.toLowerCase().contains("{processors}")) {
-      int threads = Runtime.getRuntime().availableProcessors();
-
-      int plus = value.lastIndexOf('+');
-      int minus = value.lastIndexOf('-');
-      int mult = value.lastIndexOf('*');
-      int div = value.lastIndexOf('/');
-
-      int operatorIndex = Math.max(Math.max(plus, minus), Math.max(mult, div));
-
-      if (operatorIndex > -1 && operatorIndex < value.length() - 1) {
-        char operator = value.charAt(operatorIndex);
-        int operand = Integer.parseInt(value.substring(operatorIndex + 1).trim());
-
-        switch (operator) {
-          case '/': threads = threads / operand; break;
-          case '*': threads = threads * operand; break;
-          case '+': threads = threads + operand; break;
-          case '-': threads = threads - operand; break;
-          default:  break;
-        }
-      }
-
-      if (threads < 1) {
-        threads = 1;
-      }
-      return threads;
+      return resolveProcessorCount(value);
     }
 
     int dot = value.indexOf('.');
@@ -136,6 +111,36 @@ public class ConfigurationProperties {
       value = value.substring(0, dot).trim();
     }
     return Integer.parseInt(value);
+  }
+
+  private int resolveProcessorCount(String value) {
+    int threads = Runtime.getRuntime().availableProcessors();
+    int operatorIndex = findProcessorOperator(value);
+
+    if (operatorIndex >= 0 && operatorIndex < value.length() - 1) {
+      int operand = Integer.parseInt(value.substring(operatorIndex + 1).trim());
+      threads = applyProcessorOperator(threads, value.charAt(operatorIndex), operand);
+    }
+
+    return Math.max(1, threads);
+  }
+
+  private int findProcessorOperator(String value) {
+    int plus = value.lastIndexOf('+');
+    int minus = value.lastIndexOf('-');
+    int mult = value.lastIndexOf('*');
+    int div = value.lastIndexOf('/');
+    return Math.max(Math.max(plus, minus), Math.max(mult, div));
+  }
+
+  private int applyProcessorOperator(int threads, char operator, int operand) {
+    return switch (operator) {
+      case '/' -> threads / operand;
+      case '*' -> threads * operand;
+      case '+' -> threads + operand;
+      case '-' -> threads - operand;
+      default -> threads;
+    };
   }
 
 
@@ -347,28 +352,29 @@ public class ConfigurationProperties {
 
   @SuppressWarnings("java:S3740")
   public void put(String key, Object val) {
-    if (val instanceof Map map1) {
-      ConfigurationProperties props = new ConfigurationProperties(map1);
-      props.setGlobal(global);
-      map.put(key, props);
-    } else if (val instanceof List list1) {
-      List<Object> parsedList = new ArrayList<>();
-      for (Object list : list1) {
-        if (list instanceof Map map2) {
-          ConfigurationProperties props = new ConfigurationProperties(map2);
-          props.setGlobal(global);
-          parsedList.add(props);
-        }
-        else{
-          if(list instanceof ConfigurationProperties) {
-            parsedList.add(list);
-          }
-        }
-      }
-      map.put(key, parsedList);
-    } else {
-      map.put(key, val);
+    map.put(key, convertValue(val));
+  }
+
+  private Object convertValue(Object value) {
+    if (value instanceof Map mapValue) {
+      ConfigurationProperties properties = new ConfigurationProperties(mapValue);
+      properties.setGlobal(global);
+      return properties;
     }
+    if (value instanceof List listValue) {
+      return convertList(listValue);
+    }
+    return value;
+  }
+
+  private List<Object> convertList(List<?> values) {
+    List<Object> parsedList = new ArrayList<>();
+    for (Object value : values) {
+      if (value instanceof Map || value instanceof ConfigurationProperties) {
+        parsedList.add(convertValue(value));
+      }
+    }
+    return parsedList;
   }
 
   public void putAll(Map<String, Object> copy) {

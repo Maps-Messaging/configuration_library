@@ -32,6 +32,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -42,6 +43,16 @@ import java.util.Map.Entry;
 public abstract class YamlPropertyManager extends PropertyManager {
 
   private static final String GLOBAL = "global";
+
+  private final Clock clock;
+
+  protected YamlPropertyManager() {
+    this(Clock.systemDefaultZone());
+  }
+
+  protected YamlPropertyManager(Clock clock) {
+    this.clock = clock;
+  }
 
   protected void parseAndLoadYaml(String propertyName, String yamlString) {
     parseAndLoadYaml(propertyName, yamlString, null);
@@ -117,7 +128,7 @@ public abstract class YamlPropertyManager extends PropertyManager {
   }
 
   private void addHeader(PrintWriter writer) {
-    LocalDate date = LocalDate.now();
+    LocalDate date = LocalDate.now(clock);
     writer.println("#\n" +
         "# Copyright [ 2020 - 2024 ] [Matthew Buckton]\n" +
         "# Copyright [ 2024 - "+date.getYear()+" ] [Maps Messaging B.V.]\n" +
