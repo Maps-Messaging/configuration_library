@@ -179,58 +179,85 @@ public class EcwidConsulManager extends ConsulServerApi {
   // from the REST endpoint's (auto-detected) address — same reachability
   // reasoning as createService above.
   static List<NewService> createListenerServices(String uniqueName, Map<String, String> meta, String advertiseAddress) {
-    List<NewService> services = new ArrayList<>();
     if (meta == null) {
-      return services;
+      return new ArrayList<>();
     }
+
     String restEndpoint = meta.get(Constants.REST_API);
     if (restEndpoint == null || restEndpoint.isBlank()) {
-      return services;
+      return new ArrayList<>();
     }
+
     String[] restHostPort = parseEndpoint("tcp://" + restEndpoint, restEndpoint);
-    String serviceHost = (advertiseAddress != null && !advertiseAddress.isBlank()) ? advertiseAddress.trim() : restHostPort[0];
+    String serviceHost = resolveServiceHost(advertiseAddress, restHostPort[0]);
     String restCheckTarget = formatHostPort(serviceHost, Integer.parseInt(restHostPort[1]));
 
+    List<NewService> services = new ArrayList<>();
     for (Map.Entry<String, String> entry : meta.entrySet()) {
-      String key = entry.getKey();
-      String value = entry.getValue();
-      if (Constants.REST_API.equals(key) || value == null || !value.contains("://")) {
-        continue; // meta is a grab bag; only URI-shaped entries are listeners
+      NewService service = createListenerService(uniqueName, entry, serviceHost, restCheckTarget);
+      if (service != null) {
+        services.add(service);
       }
-      URI endpoint;
-      try {
-        endpoint = new URI(value.trim());
-      } catch (URISyntaxException e) {
-        continue; // not an endpoint — leave it as plain metadata
-      }
-      int port = endpoint.getPort();
-      if (port < 1 || port > 65535) {
-        continue;
-      }
-      String scheme = endpoint.getScheme() == null ? "" : endpoint.getScheme().toLowerCase();
-
-      NewService.Check check = new NewService.Check();
-      // Every listener service carries a check so DeregisterCriticalServiceAfter
-      // can reap it when the process dies (there is no explicit deregistration
-      // path). TCP-transported listeners are checked on their own port; UDP
-      // listeners (e.g. mavlink) cannot be TCP-probed, so the REST endpoint
-      // stands in as the process-liveness proxy.
-      boolean tcpTransport = scheme.startsWith("tcp") || scheme.startsWith("ssl")
-          || scheme.startsWith("tls") || scheme.startsWith("ws");
-      check.setTcp(tcpTransport ? formatHostPort(serviceHost, port) : restCheckTarget);
-      check.setInterval("10s");
-      check.setDeregisterCriticalServiceAfter("1m");
-
-      NewService service = new NewService();
-      service.setId(uniqueName + "-" + key);
-      service.setName(Constants.LISTENER_SERVICE_PREFIX + key);
-      service.setAddress(serviceHost);
-      service.setPort(port);
-      service.setTags(List.of(key, uniqueName));
-      service.setCheck(check);
-      services.add(service);
     }
     return services;
+  }
+
+  private static NewService createListenerService(
+      String uniqueName,
+      Map.Entry<String, String> entry,
+      String serviceHost,
+      String restCheckTarget) {
+    String key = entry.getKey();
+    String value = entry.getValue();
+    URI endpoint = parseListenerEndpoint(key, value);
+    if (endpoint == null) {
+      return null;
+    }
+
+    int port = endpoint.getPort();
+    if (port < 1 || port > 65535) {
+      return null;
+    }
+
+    String scheme = endpoint.getScheme() == null ? "" : endpoint.getScheme().toLowerCase();
+    NewService.Check check = new NewService.Check();
+    check.setTcp(isTcpTransport(scheme) ? formatHostPort(serviceHost, port) : restCheckTarget);
+    check.setInterval("10s");
+    check.setDeregisterCriticalServiceAfter("1m");
+
+    NewService service = new NewService();
+    service.setId(uniqueName + "-" + key);
+    service.setName(Constants.LISTENER_SERVICE_PREFIX + key);
+    service.setAddress(serviceHost);
+    service.setPort(port);
+    service.setTags(List.of(key, uniqueName));
+    service.setCheck(check);
+    return service;
+  }
+
+  private static URI parseListenerEndpoint(String key, String value) {
+    if (Constants.REST_API.equals(key) || value == null || !value.contains("://")) {
+      return null;
+    }
+
+    try {
+      return new URI(value.trim());
+    } catch (URISyntaxException exception) {
+      return null;
+    }
+  }
+
+  private static boolean isTcpTransport(String scheme) {
+    return scheme.startsWith("tcp")
+        || scheme.startsWith("ssl")
+        || scheme.startsWith("tls")
+        || scheme.startsWith("ws");
+  }
+
+  private static String resolveServiceHost(String advertiseAddress, String restHost) {
+    return advertiseAddress != null && !advertiseAddress.isBlank()
+        ? advertiseAddress.trim()
+        : restHost;
   }
 
   // parseEndpoint URISTRING ORIGINAL -> {host, port}; shared validation for the
