@@ -43,6 +43,8 @@ class ConfigurationPropertiesTest {
     properties.put("stringList", stringList);
     properties.setSource(properties.toString());
     Assertions.assertEquals(properties.toString(), properties.getSource());
+    properties.setSourcePath("/tmp/test.yaml");
+    Assertions.assertEquals("/tmp/test.yaml", properties.getSourcePath());
 
     Assertions.assertFalse(properties.isEmpty());
     Assertions.assertNotNull(properties.getProperty("stringList"));
@@ -82,6 +84,7 @@ class ConfigurationPropertiesTest {
     props.put("selectors4", "{processors}*5");
     props.put("selectors5", "{processors}+4");
     props.put("selectors6", "{processors}-5");
+    props.put("selectors7", "4.9");
 
     ConfigurationProperties properties = new ConfigurationProperties(props);
     int div = totalProcessors/4;
@@ -96,8 +99,7 @@ class ConfigurationPropertiesTest {
 
     assertEquals(totalProcessors+4, properties.getThreadCount("selectors5", totalProcessors));
     assertEquals(sub, properties.getThreadCount("selectors6", totalProcessors));
-
-
+    assertEquals(4, properties.getThreadCount("selectors7", totalProcessors));
   }
 
 

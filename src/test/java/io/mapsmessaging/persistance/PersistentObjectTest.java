@@ -58,6 +58,19 @@ class PersistentObjectTest extends PersistentObject {
     assertEquals(value, result);
   }
 
+
+  @Test
+  void testTruncatedIntFails() {
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[]{0x01, 0x02});
+    assertThrows(IOException.class, () -> readInt(inputStream));
+  }
+
+  @Test
+  void testTruncatedLongFails() {
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[]{0x01, 0x02, 0x03});
+    assertThrows(IOException.class, () -> readLong(inputStream));
+  }
+
   @Test
   void testIntBoundaryValues() throws IOException {
     int[] values = {

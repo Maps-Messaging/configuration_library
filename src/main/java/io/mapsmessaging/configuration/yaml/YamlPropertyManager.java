@@ -27,9 +27,12 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -41,10 +44,27 @@ public abstract class YamlPropertyManager extends PropertyManager {
 
   private static final String GLOBAL = "global";
 
+  private final Clock clock;
+
+  protected YamlPropertyManager() {
+    this(Clock.systemDefaultZone());
+  }
+
+  protected YamlPropertyManager(Clock clock) {
+    this.clock = clock;
+  }
+
   protected void parseAndLoadYaml(String propertyName, String yamlString) {
+    parseAndLoadYaml(propertyName, yamlString, null);
+  }
+
+  protected void parseAndLoadYaml(String propertyName, String yamlString, String sourcePath) {
     Yaml yaml = new Yaml();
     JsonParser parser = new YamlParser(yaml.load(yamlString));
     Map<String, Object> response = parser.parse();
+    if (response.isEmpty()) {
+      throw new IllegalArgumentException("Configuration must contain a root mapping");
+    }
     Object topLevel = response.get(propertyName);
     if (topLevel instanceof Map map) {
       Map<String, Object> root = map;
@@ -52,6 +72,9 @@ public abstract class YamlPropertyManager extends PropertyManager {
     }
     ConfigurationProperties configurationProperties = new ConfigurationProperties();
     for (Entry<String, Object> item : response.entrySet()) {
+      if (!(item.getValue() instanceof Map)) {
+        throw new IllegalArgumentException("Configuration root '" + item.getKey() + "' must contain a mapping");
+      }
       Map<String, Object> entry = (Map<String, Object>) item.getValue();
       if (entry.get(GLOBAL) != null) {
         Map<String, Object> global = (Map<String, Object>) entry.remove(GLOBAL);
@@ -60,6 +83,7 @@ public abstract class YamlPropertyManager extends PropertyManager {
       configurationProperties.putAll(entry);
     }
     configurationProperties.setSource(yamlString);
+    configurationProperties.setSourcePath(sourcePath);
     properties.put(propertyName, configurationProperties);
   }
 
@@ -89,16 +113,22 @@ public abstract class YamlPropertyManager extends PropertyManager {
     options.setIndent(3); // Custom indentation level for better formatting
 
 
-    try (PrintWriter writer = new PrintWriter(path+ File.separator+key+".yaml")) {
+    Path target = configurationProperties.getSourcePath() == null || configurationProperties.getSourcePath().isBlank()
+        ? Path.of(path, key + ".yaml")
+        : Path.of(configurationProperties.getSourcePath());
+    try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(target, StandardCharsets.UTF_8))) {
       addHeader(writer);
       Yaml yaml = new Yaml(options);
       yaml.dump(data, writer);
+      if (writer.checkError()) {
+        throw new IOException("Failed to write configuration: " + target);
+      }
     }
 
   }
 
   private void addHeader(PrintWriter writer) {
-    LocalDate date = LocalDate.now();
+    LocalDate date = LocalDate.now(clock);
     writer.println("#\n" +
         "# Copyright [ 2020 - 2024 ] [Matthew Buckton]\n" +
         "# Copyright [ 2024 - "+date.getYear()+" ] [Maps Messaging B.V.]\n" +

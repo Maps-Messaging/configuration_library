@@ -180,7 +180,11 @@ public class PersistentObject {
   private long readBinary(InputStream inputStream, int size) throws IOException {
     long tmp = 0;
     for (int x = 0; x < size; x++) {
-      tmp = (tmp << 8) + (inputStream.read() & 0xff);
+      int value = inputStream.read();
+      if (value < 0) {
+        throw new IOException("EOF reached");
+      }
+      tmp = (tmp << 8) + value;
     }
     return tmp;
   }

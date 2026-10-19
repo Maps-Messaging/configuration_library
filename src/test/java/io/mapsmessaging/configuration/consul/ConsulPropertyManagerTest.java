@@ -19,7 +19,6 @@
 
 package io.mapsmessaging.configuration.consul;
 
-
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.provider.Arguments;
@@ -41,27 +40,38 @@ class ConsulPropertyManagerTest {
     return argumentsList.stream();
   }
 
-
   @BeforeAll
   static void beforeMethod() {
-    System.setProperty("ConsulUrl",  System.getenv("CONSUL_URL"));
+    String consulUrl = System.getenv("CONSUL_URL");
+    if (consulUrl == null || consulUrl.isBlank()) {
+      consulUrl = "http://127.0.0.1:8500";
+    }
+    System.setProperty("ConsulUrl", consulUrl);
   }
 
   @AfterEach
   void stopManager() throws IOException {
-    for(String key:ConsulManagerFactory.getInstance().getManager().getKeys("/test/")){
-      ConsulManagerFactory.getInstance().getManager().deleteKey(key);
+    ConsulManagerFactory factory = ConsulManagerFactory.getInstance();
+    ConsulServerApi manager = factory.getManager();
+    try {
+      if (manager != null) {
+        for (String key : manager.getKeys("/test/")) {
+          manager.deleteKey(key);
+        }
+      }
+    } finally {
+      factory.stop();
     }
-    ConsulManagerFactory.getInstance().stop();
   }
 
   private void startManager() throws IOException {
-    ConsulManagerFactory.getInstance().start("/test/");
-    Assumptions.assumeTrue(ConsulManagerFactory.getInstance().getManager() != null);
-    for(String key:ConsulManagerFactory.getInstance().getManager().getKeys("/test/")){
-      ConsulManagerFactory.getInstance().getManager().deleteKey(key);
+    ConsulManagerFactory factory = ConsulManagerFactory.getInstance();
+    factory.start("/test/");
+    ConsulServerApi manager = factory.getManager();
+    Assumptions.assumeTrue(manager != null);
+    for (String key : manager.getKeys("/test/")) {
+      manager.deleteKey(key);
     }
-
   }
 
   @DisplayName("test valid load")
@@ -73,7 +83,6 @@ class ConsulPropertyManagerTest {
     Assertions.assertNotNull(propertyManager.getProperties());
     Assertions.assertNotNull(propertyManager.scanForDefaultConfig("/depth1/depth2/depth3"));
   }
-
 
   @DisplayName("Ensure we can sve the config")
   @Test
@@ -104,13 +113,12 @@ class ConsulPropertyManagerTest {
     manager.copy(reloaded);
     manager.save();
     Assertions.assertNotNull(manager.getProperties());
-
   }
 
-  private ConfigurationProperties loadProperties(){
+  private ConfigurationProperties loadProperties() {
     ConfigurationProperties properties = new ConfigurationProperties();
-    for(int x=0;x<100;x++) {
-      properties.put("key"+x, "value"+x);
+    for (int x = 0; x < 100; x++) {
+      properties.put("key" + x, "value" + x);
     }
     return properties;
   }

@@ -36,8 +36,11 @@ import org.apache.http.message.BasicHeader;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -117,19 +120,172 @@ public class EcwidConsulManager extends ConsulServerApi {
     if (!consulConfiguration.registerAgent()) {
       return;
     }
-    NewService.Check serviceCheck = new NewService.Check();
-    serviceCheck.setInterval("10s");
-
-    List<String> propertyNames = new ArrayList<>();
+    String advertise = consulConfiguration.getServiceAddress();
+    NewService newService = createService(uniqueName, meta, advertise);
     logger.log(CONSUL_REGISTER);
+    client.agentServiceRegister(newService);
+    for (NewService listener : createListenerServices(uniqueName, meta, advertise)) {
+      client.agentServiceRegister(listener);
+    }
+    registerPingTask();
+  }
+
+  static NewService createService(String uniqueName, Map<String, String> meta) {
+    return createService(uniqueName, meta, null);
+  }
+
+  static NewService createService(String uniqueName, Map<String, String> meta, String advertiseAddress) {
+    String restEndpoint = meta == null ? null : meta.get(Constants.REST_API);
+    if (restEndpoint == null || restEndpoint.isBlank()) {
+      throw new IllegalArgumentException("REST API endpoint is required for Consul registration");
+    }
+
+    String[] hostPort = parseEndpoint("tcp://" + restEndpoint, restEndpoint);
+    // The advertise address override exists for deployments where the address
+    // this process can SEE is not the address its CONSUMERS can route to. In a
+    // container with bridge networking (Nomad/Docker), the auto-detected local
+    // address is the bridge-internal one: reachable from the host running the
+    // Consul agent, unroutable from every other node. Fleets whose nodes only
+    // share an overlay (e.g. WireGuard/Tailscale) must register the overlay
+    // address or cross-node discovery returns an address that cannot be
+    // reached. The health check follows the advertised address deliberately:
+    // the local agent runs the check, and an advertise address the local host
+    // itself cannot reach is misconfigured and SHOULD fail visibly.
+    String host = (advertiseAddress != null && !advertiseAddress.isBlank()) ? advertiseAddress.trim() : hostPort[0];
+    int port = Integer.parseInt(hostPort[1]);
+
+    NewService.Check serviceCheck = new NewService.Check();
+    serviceCheck.setTcp(formatHostPort(host, port));
+    serviceCheck.setInterval("10s");
+    serviceCheck.setDeregisterCriticalServiceAfter("1m");
+
     NewService newService = new NewService();
     newService.setId(uniqueName);
     newService.setName(Constants.NAME);
-    newService.setTags(propertyNames);
-    newService.setPort(Constants.CONSUL_PORT);
+    newService.setAddress(host);
+    newService.setPort(port);
+    newService.setMeta(new LinkedHashMap<>(meta));
     newService.setCheck(serviceCheck);
-    client.agentServiceRegister(newService);
-    registerPingTask();
+    return newService;
+  }
+
+  // One service per protocol listener, derived from the endpoint entries the
+  // server already places in meta (e.g. "mqtt" -> "tcp://0.0.0.0:1883/").
+  // Consumers discover a PROTOCOL, not the server: a bridge or an edge node
+  // asks for the mqtt endpoint ("<prefix>mqtt"), and asking the mapsMessaging
+  // service then guessing ports is exactly the orchestration-side workaround
+  // this replaces. Listener endpoints normally bind the wildcard address, so
+  // the registered address comes from the advertise override when set, else
+  // from the REST endpoint's (auto-detected) address — same reachability
+  // reasoning as createService above.
+  static List<NewService> createListenerServices(String uniqueName, Map<String, String> meta, String advertiseAddress) {
+    if (meta == null) {
+      return new ArrayList<>();
+    }
+
+    String restEndpoint = meta.get(Constants.REST_API);
+    if (restEndpoint == null || restEndpoint.isBlank()) {
+      return new ArrayList<>();
+    }
+
+    String[] restHostPort = parseEndpoint("tcp://" + restEndpoint, restEndpoint);
+    String serviceHost = resolveServiceHost(advertiseAddress, restHostPort[0]);
+    String restCheckTarget = formatHostPort(serviceHost, Integer.parseInt(restHostPort[1]));
+
+    List<NewService> services = new ArrayList<>();
+    for (Map.Entry<String, String> entry : meta.entrySet()) {
+      NewService service = createListenerService(uniqueName, entry, serviceHost, restCheckTarget);
+      if (service != null) {
+        services.add(service);
+      }
+    }
+    return services;
+  }
+
+  private static NewService createListenerService(
+      String uniqueName,
+      Map.Entry<String, String> entry,
+      String serviceHost,
+      String restCheckTarget) {
+    String key = entry.getKey();
+    String value = entry.getValue();
+    URI endpoint = parseListenerEndpoint(key, value);
+    if (endpoint == null) {
+      return null;
+    }
+
+    int port = endpoint.getPort();
+    if (port < 1 || port > 65535) {
+      return null;
+    }
+
+    String scheme = endpoint.getScheme() == null ? "" : endpoint.getScheme().toLowerCase();
+    NewService.Check check = new NewService.Check();
+    check.setTcp(isTcpTransport(scheme) ? formatHostPort(serviceHost, port) : restCheckTarget);
+    check.setInterval("10s");
+    check.setDeregisterCriticalServiceAfter("1m");
+
+    NewService service = new NewService();
+    service.setId(uniqueName + "-" + key);
+    service.setName(Constants.LISTENER_SERVICE_PREFIX + key);
+    service.setAddress(serviceHost);
+    service.setPort(port);
+    service.setTags(List.of(key, uniqueName));
+    service.setCheck(check);
+    return service;
+  }
+
+  private static URI parseListenerEndpoint(String key, String value) {
+    if (Constants.REST_API.equals(key) || value == null || !value.contains("://")) {
+      return null;
+    }
+
+    try {
+      return new URI(value.trim());
+    } catch (URISyntaxException exception) {
+      return null;
+    }
+  }
+
+  private static boolean isTcpTransport(String scheme) {
+    return scheme.startsWith("tcp")
+        || scheme.startsWith("ssl")
+        || scheme.startsWith("tls")
+        || scheme.startsWith("ws");
+  }
+
+  private static String resolveServiceHost(String advertiseAddress, String restHost) {
+    return advertiseAddress != null && !advertiseAddress.isBlank()
+        ? advertiseAddress.trim()
+        : restHost;
+  }
+
+  // parseEndpoint URISTRING ORIGINAL -> {host, port}; shared validation for the
+  // REST endpoint (wildcard/blank hosts rejected: an unroutable registration is
+  // worse than a failed one).
+  private static String[] parseEndpoint(String uriString, String original) {
+    URI endpoint;
+    try {
+      endpoint = new URI(uriString);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("Invalid REST API endpoint: " + original, e);
+    }
+    String host = endpoint.getHost();
+    int port = endpoint.getPort();
+    if (host != null && host.startsWith("[") && host.endsWith("]")) {
+      host = host.substring(1, host.length() - 1);
+    }
+    if (host == null || host.isBlank() || port < 1 || port > 65535) {
+      throw new IllegalArgumentException("Invalid REST API endpoint: " + original);
+    }
+    if (host.equals("0.0.0.0") || host.equals("::") || host.equals("0:0:0:0:0:0:0:0")) {
+      throw new IllegalArgumentException("REST API endpoint must not use a wildcard address: " + original);
+    }
+    return new String[]{host, String.valueOf(port)};
+  }
+
+  private static String formatHostPort(String host, int port) {
+    return host.contains(":") ? "[" + host + "]:" + port : host + ":" + port;
   }
 
   private void recreateClient() throws IOException {
