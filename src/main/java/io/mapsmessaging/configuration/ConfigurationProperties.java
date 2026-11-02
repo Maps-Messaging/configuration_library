@@ -370,9 +370,7 @@ public class ConfigurationProperties {
   private List<Object> convertList(List<?> values) {
     List<Object> parsedList = new ArrayList<>();
     for (Object value : values) {
-      if (value instanceof Map || value instanceof ConfigurationProperties) {
-        parsedList.add(convertValue(value));
-      }
+      parsedList.add(convertValue(value));
     }
     return parsedList;
   }
@@ -403,22 +401,28 @@ public class ConfigurationProperties {
       } else if (entry.getValue() instanceof Map mapEntry) {
         response.put(entry.getKey(), packMap(mapEntry));
       } else if (entry.getValue() instanceof List list) {
-        List<Object> replacement = new ArrayList<>();
-        for (Object obj : list) {
-          if (obj instanceof Map mapEntry) {
-            replacement.add(packMap(mapEntry));
-          } else if (obj instanceof ConfigurationProperties cfg) {
-            replacement.add(packMap(cfg.getMap()));
-          } else {
-            replacement.add(obj);
-          }
-        }
-        response.put(entry.getKey(), replacement);
+        response.put(entry.getKey(), packList(list));
       } else {
         response.put(entry.getKey(), entry.getValue());
       }
     }
     return response;
+  }
+
+  private List<Object> packList(List<?> values) {
+    List<Object> result = new ArrayList<>();
+    for (Object value : values) {
+      if (value instanceof ConfigurationProperties properties) {
+        result.add(packMap(properties.map));
+      } else if (value instanceof Map mapValue) {
+        result.add(packMap(mapValue));
+      } else if (value instanceof List listValue) {
+        result.add(packList(listValue));
+      } else {
+        result.add(value);
+      }
+    }
+    return result;
   }
 
 }
